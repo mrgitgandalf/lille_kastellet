@@ -8,3 +8,22 @@ Thumbs.db
 *~
 .vscode/
 .idea/
+
+# Node / Next
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Env
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel/
+
+# TS
+next-env.d.ts
+*.tsbuildinfo
