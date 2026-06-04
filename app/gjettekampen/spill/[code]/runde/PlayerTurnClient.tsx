@@ -8,6 +8,7 @@ import { GuessFeed } from "@/components/GuessFeed";
 import { Standings } from "@/components/Standings";
 import { FinalReveal } from "@/components/FinalReveal";
 import { Confetti } from "@/components/Confetti";
+import Timer from "@/components/Timer";
 import {
   getActiveTurn,
   getAllTurns,
@@ -235,6 +236,14 @@ export default function PlayerTurnClient({
           <p className="text-lg font-semibold">{drawer?.name ?? "?"}</p>
           {isDrawer && (
             <p className="text-sm text-yellow-300">Ord: {activeTurn.word}</p>
+          )}
+          {room.round_seconds > 0 && activeTurn.started_at && (
+            <div className="mt-1">
+              <Timer
+                startedAt={Date.parse(activeTurn.started_at)}
+                durationSeconds={room.round_seconds}
+              />
+            </div>
           )}
         </div>
       </header>

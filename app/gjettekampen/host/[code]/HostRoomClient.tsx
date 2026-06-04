@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createAblyClient } from "@/lib/ably-client";
 import RoomQRCode from "@/components/RoomQRCode";
+import Timer from "@/components/Timer";
 import { DrawingCanvas, type Stroke } from "@/components/DrawingCanvas";
 import { GuessFeed } from "@/components/GuessFeed";
 import { Standings } from "@/components/Standings";
@@ -69,6 +70,7 @@ export default function HostRoomClient({
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
   > | null>(null);
+  const expiredTurnRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -322,6 +324,19 @@ export default function HostRoomClient({
   const drawer = activeTurn
     ? players.find((p) => p.id === activeTurn.drawer_player_id) ?? null
     : null;
+  const turnStartMs = activeTurn?.started_at
+    ? Date.parse(activeTurn.started_at)
+    : null;
+
+  function handleTimerExpire() {
+    if (!hostToken || !activeTurn) return;
+    if (expiredTurnRef.current === activeTurn.id) return;
+    expiredTurnRef.current = activeTurn.id;
+    nextTurn({ roomId: room.id, hostToken }).catch((err) => {
+      setError(err instanceof Error ? err.message : "Feil ved timeout.");
+      expiredTurnRef.current = null;
+    });
+  }
 
   return (
     <main className="flex flex-col gap-5">
@@ -339,6 +354,15 @@ export default function HostRoomClient({
             <p className="text-xs uppercase tracking-wide text-neutral-400">Tegner</p>
             <p className="text-lg font-semibold">{drawer.name}</p>
             <p className="text-sm text-yellow-300">Ord: {activeTurn.word}</p>
+            {room.round_seconds > 0 && turnStartMs && (
+              <div className="mt-1">
+                <Timer
+                  startedAt={turnStartMs}
+                  durationSeconds={room.round_seconds}
+                  onExpire={handleTimerExpire}
+                />
+              </div>
+            )}
           </div>
         )}
       </header>
