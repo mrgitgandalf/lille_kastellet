@@ -16,7 +16,7 @@ export default function JoinForm() {
       return;
     }
     setError(null);
-    router.push(`/smartsommer/spill/${code}`);
+    router.push(`/tegnekjeden/spill/${code}`);
   }
 
   return (

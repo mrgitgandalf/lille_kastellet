@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "Smartsommer – Lille Kastellet",
-  description: "Telephone Pictionary for teamet på sommeravslutningen.",
+  title: "Gjettekampen – Lille Kastellet",
+  description: "Alle-mot-alle pictionary. Tegn ordet ditt, gjett før noen andre.",
 };
 
 export const viewport: Viewport = {
@@ -12,7 +12,7 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function SmartsommerLayout({
+export default function GjettekampenLayout({
   children,
 }: {
   children: React.ReactNode;

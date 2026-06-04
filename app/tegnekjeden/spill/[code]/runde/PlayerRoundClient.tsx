@@ -70,7 +70,7 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
   // Når host sender til reveal, redirect
   useEffect(() => {
     if (room.state === "reveal") {
-      router.push(`/smartsommer/spill/${room.code}/venter`);
+      router.push(`/tegnekjeden/spill/${room.code}/venter`);
     }
   }, [room.state, room.code, router]);
 
