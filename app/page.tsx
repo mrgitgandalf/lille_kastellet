@@ -9,14 +9,19 @@ export default function Home() {
       >
         Lille Kastellet
       </h1>
-      <Image
-        src="/lille_kastellet.jpg"
-        alt="Historisk fotografi av Lille Kastellet med hage og beboere"
-        width={1600}
-        height={1067}
-        priority
-        className="block h-auto w-full border border-neutral-200 shadow-[0_2px_12px_rgba(0,0,0,0.1)]"
-      />
+      <figure>
+        <Image
+          src="/lille_kastellet.jpg"
+          alt="Historisk fotografi av Lille Kastellet med hage og beboere"
+          width={1600}
+          height={1067}
+          priority
+          className="block h-auto w-full border border-neutral-200 shadow-[0_2px_12px_rgba(0,0,0,0.1)]"
+        />
+        <figcaption className="mt-2 text-xs text-neutral-500">
+          Foto tilgjengeliggjort av Bekkelagshøgda lokalhistorisk forening (v/ Dag Jarnøy)
+        </figcaption>
+      </figure>
     </main>
   );
 }
