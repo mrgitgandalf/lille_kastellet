@@ -157,16 +157,21 @@ export async function startGame(input: {
   const words = (await sql`
     select * from gjette_words where room_id = ${room.id} order by word_order asc
   `) as GjetteWord[];
-  if (words.length < 1) {
-    throw new Error("Trenger minst ett ord for å starte.");
+  if (words.length < players.length) {
+    throw new Error(
+      `Trenger minst ${players.length} ord (du har ${words.length}).`,
+    );
   }
+
+  // Rettferdig fordeling: bruk floor(words/players) × players ord
+  // så alle tegner like mange ganger. Overskudd kappes.
+  const turnsPerPlayer = Math.floor(words.length / players.length);
+  const turnsCount = turnsPerPlayer * players.length;
 
   const seed = Date.parse(room.created_at) & 0x7fffffff;
   const shuffled = shuffle(players, seed);
 
-  // Alle ord brukes. Tegnere fordeles syklisk gjennom (stokket) spillerliste,
-  // slik at 4 ord + 2 spillere → A,B,A,B (hver tegner 2 ganger).
-  for (let i = 0; i < words.length; i++) {
+  for (let i = 0; i < turnsCount; i++) {
     const drawer = shuffled[i % shuffled.length];
     await sql`
       insert into gjette_turns (room_id, turn_order, drawer_player_id, word, state)
@@ -179,7 +184,7 @@ export async function startGame(input: {
     where room_id = ${room.id} and turn_order = 0
   `;
   await sql`
-    update rooms set state = 'playing', pages_per_book = ${words.length}
+    update rooms set state = 'playing', pages_per_book = ${turnsCount}
     where id = ${room.id}
   `;
 
