@@ -1,19 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { submitPage } from "../../../actions";
+import { createAblyClient } from "@/lib/ably-client";
+import {
+  getPreviousPageForPlayer,
+  getRoomById,
+  submitPage,
+} from "../../../actions";
 import { DrawingCanvas, type DrawingCanvasHandle } from "@/components/DrawingCanvas";
 import Timer from "@/components/Timer";
-import { ownerSeatForRound, pageKindForIndex } from "@/lib/game";
-import type { Player, Room } from "@/lib/types";
+import { pageKindForIndex } from "@/lib/game";
+import type { Room } from "@/lib/types";
 
 export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }) {
   const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [room, setRoom] = useState<Room>(initialRoom);
-  const [players, setPlayers] = useState<Player[]>([]);
   const [clientToken, setClientToken] = useState<string | null>(null);
   const [previousContent, setPreviousContent] = useState<{
     kind: "text" | "drawing";
@@ -31,40 +33,22 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
     setClientToken(localStorage.getItem(`client_token:${room.code}`));
   }, [room.code]);
 
-  // Hold rom + spillerliste oppdatert
+  // Lytt på room.updated for å vite når runde / state endrer seg
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("players")
-        .select("*")
-        .eq("room_id", room.id)
-        .order("seat_order", { ascending: true });
-      if (!cancelled) setPlayers(data ?? []);
-    })();
-
-    const channel = supabase
-      .channel(`player-round-${room.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "rooms", filter: `id=eq.${room.id}` },
-        (payload) => {
-          if (payload.new) setRoom(payload.new as Room);
-        },
-      )
-      .subscribe();
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
+    const client = createAblyClient();
+    const channel = client.channels.get(`room:${room.id}`);
+    const refreshRoom = async () => {
+      const r = await getRoomById(room.id);
+      if (r) setRoom(r);
     };
-  }, [room.id, supabase]);
+    channel.subscribe("room.updated", refreshRoom);
+    return () => {
+      channel.unsubscribe();
+      client.close();
+    };
+  }, [room.id]);
 
-  const me = useMemo(
-    () => players.find((p) => p.client_token === clientToken) ?? null,
-    [players, clientToken],
-  );
-
-  // Reset submit-state og hent forrige side når runden endres
+  // Når runden endres, reset submit-state og hent forrige side
   useEffect(() => {
     setSubmitted(false);
     setTextInput("");
@@ -72,43 +56,25 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
     startedAtRef.current = Date.now();
     canvasRef.current?.clear();
 
-    if (!me || !room.pages_per_book) return;
-    const N = room.pages_per_book;
-    const round = room.current_round;
-    if (round === 0) {
+    if (!clientToken || !room.pages_per_book) return;
+    if (room.current_round === 0) {
       setPreviousContent(null);
       return;
     }
-
     (async () => {
-      const ownerSeat = ownerSeatForRound(me.seat_order, round, N);
-      const owner = players.find((x) => x.seat_order === ownerSeat);
-      if (!owner) return;
-      const { data: book } = await supabase
-        .from("books")
-        .select("id")
-        .eq("room_id", room.id)
-        .eq("owner_player_id", owner.id)
-        .maybeSingle();
-      if (!book) return;
-      const { data: page } = await supabase
-        .from("pages")
-        .select("kind, content")
-        .eq("book_id", book.id)
-        .eq("page_index", round - 1)
-        .maybeSingle();
-      if (page) setPreviousContent({ kind: page.kind as "text" | "drawing", content: page.content });
+      const prev = await getPreviousPageForPlayer({ clientToken });
+      setPreviousContent(prev);
     })();
-  }, [me, room.current_round, room.pages_per_book, room.id, players, supabase]);
+  }, [clientToken, room.current_round, room.pages_per_book, room.id]);
 
-  // Når host avslutter runden, oppdater state (rom-state endres via realtime)
+  // Når host sender til reveal, redirect
   useEffect(() => {
     if (room.state === "reveal") {
       router.push(`/smartsommer/spill/${room.code}/venter`);
     }
   }, [room.state, room.code, router]);
 
-  if (!clientToken || !me) {
+  if (!clientToken) {
     return (
       <main className="text-center">
         <p>Laster spilleren din...</p>
@@ -119,7 +85,9 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
   if (!room.pages_per_book || room.state !== "playing") {
     return (
       <main className="text-center">
-        <h1 className="text-xl font-semibold">Venter på at host starter neste...</h1>
+        <h1 className="text-xl font-semibold">
+          Venter på at host starter neste...
+        </h1>
       </main>
     );
   }

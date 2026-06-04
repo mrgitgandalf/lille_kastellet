@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { joinRoom } from "../../actions";
+import { createAblyClient } from "@/lib/ably-client";
+import { getPlayers, getRoomById, joinRoom } from "../../actions";
 import type { Player, Room } from "@/lib/types";
 
 export default function PlayerLobbyClient({
@@ -14,7 +14,6 @@ export default function PlayerLobbyClient({
   initialPlayers: Player[];
 }) {
   const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [room, setRoom] = useState<Room>(initialRoom);
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
   const [clientToken, setClientToken] = useState<string | null>(null);
@@ -24,8 +23,7 @@ export default function PlayerLobbyClient({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = localStorage.getItem(`client_token:${room.code}`);
-    setClientToken(stored);
+    setClientToken(localStorage.getItem(`client_token:${room.code}`));
   }, [room.code]);
 
   const myPlayer = useMemo(
@@ -34,34 +32,23 @@ export default function PlayerLobbyClient({
   );
 
   useEffect(() => {
-    const channel = supabase
-      .channel(`player-lobby-${room.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "rooms", filter: `id=eq.${room.id}` },
-        (payload) => {
-          if (payload.new) setRoom(payload.new as Room);
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "players", filter: `room_id=eq.${room.id}` },
-        async () => {
-          const { data } = await supabase
-            .from("players")
-            .select("*")
-            .eq("room_id", room.id)
-            .order("seat_order", { ascending: true });
-          setPlayers(data ?? []);
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
+    const client = createAblyClient();
+    const channel = client.channels.get(`room:${room.id}`);
+    const refreshRoom = async () => {
+      const r = await getRoomById(room.id);
+      if (r) setRoom(r);
     };
-  }, [room.id, supabase]);
+    const refreshPlayers = async () => {
+      setPlayers(await getPlayers(room.id));
+    };
+    channel.subscribe("room.updated", refreshRoom);
+    channel.subscribe("players.updated", refreshPlayers);
+    return () => {
+      channel.unsubscribe();
+      client.close();
+    };
+  }, [room.id]);
 
-  // Når spillet starter, send spilleren videre til rundeskjermen
   useEffect(() => {
     if (room.state === "playing" && myPlayer) {
       router.push(`/smartsommer/spill/${room.code}/runde`);

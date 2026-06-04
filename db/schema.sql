@@ -1,5 +1,5 @@
 -- Smartsommer / Lille Kastellet – Telephone Pictionary
--- Kjør hele scriptet i Supabase SQL Editor på et tomt prosjekt.
+-- Kjør i Neon SQL Editor på et tomt prosjekt (eller via psql).
 
 create extension if not exists "pgcrypto";
 
@@ -57,31 +57,6 @@ create table if not exists public.pages (
 );
 create index if not exists pages_book_idx on public.pages (book_id);
 
--- REALTIME ------------------------------------------------------------
--- Aktiver Realtime på alle tabellene. I Supabase Studio:
---   Database → Replication → supabase_realtime → marker rooms, players, books, pages
--- Eller kjør:
-alter publication supabase_realtime add table public.rooms;
-alter publication supabase_realtime add table public.players;
-alter publication supabase_realtime add table public.books;
-alter publication supabase_realtime add table public.pages;
-
--- RLS -----------------------------------------------------------------
--- Vi gjør all DB-skriving fra server actions med service role-nøkkelen,
--- så ingen anon-skriv er nødvendig. Anon trenger kun SELECT for å lytte
--- på Realtime-endringer.
-
-alter table public.rooms enable row level security;
-alter table public.players enable row level security;
-alter table public.books enable row level security;
-alter table public.pages enable row level security;
-
-drop policy if exists "anon read rooms" on public.rooms;
-drop policy if exists "anon read players" on public.players;
-drop policy if exists "anon read books" on public.books;
-drop policy if exists "anon read pages" on public.pages;
-
-create policy "anon read rooms" on public.rooms for select to anon using (true);
-create policy "anon read players" on public.players for select to anon using (true);
-create policy "anon read books" on public.books for select to anon using (true);
-create policy "anon read pages" on public.pages for select to anon using (true);
+-- Ingen RLS – all data-tilgang går via server actions med
+-- DATABASE_URL (full skrivetilgang). Klienten leser via fetch/server
+-- actions, ikke direkte mot Postgres.

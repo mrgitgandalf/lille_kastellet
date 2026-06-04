@@ -3,8 +3,8 @@
 Statisk forside for **lillekastellet.no** + spillappen
 **Smartsommer** (Telephone Pictionary) på `/smartsommer`.
 
-Stack: Next.js 15 (App Router) · React 19 · Supabase (Postgres + Realtime)
-· Tailwind CSS · TypeScript. Deploy: Vercel.
+Stack: Next.js 15 (App Router) · React 19 · Tailwind CSS · TypeScript ·
+**Neon Postgres** (serverless DB) · **Ably** (realtime). Deploy: Vercel.
 
 ---
 
@@ -13,7 +13,7 @@ Stack: Next.js 15 (App Router) · React 19 · Supabase (Postgres + Realtime)
 ```bash
 npm install
 cp .env.local.example .env.local
-# fyll inn Supabase-nøklene
+# fyll inn DATABASE_URL og ABLY_API_KEY
 npm run dev
 ```
 
@@ -22,48 +22,46 @@ http://localhost:3000/smartsommer.
 
 ---
 
-## 1. Sett opp Supabase
+## 1. Sett opp Neon Postgres
 
-Free tier tillater **2 aktive prosjekter per organisasjon**. Hvis du
-allerede har 2: opprett en **ny organisasjon** i Supabase
-(brukermenyen → "New organization") og legg dette prosjektet der.
-
-1. Opprett nytt Supabase-prosjekt. Velg region nær deg (eu-north-1
-   anbefales fra Norge).
-2. Åpne **SQL Editor** → "New query" → lim inn alt fra
-   `supabase/schema.sql` → kjør. Du skal nå ha tabellene `rooms`,
-   `players`, `books`, `pages`, samt RLS-policies for read-tilgang
-   for anon.
-3. Aktiver Realtime: **Database → Replication → supabase_realtime**.
-   Marker alle fire tabellene. (SQL-scriptet legger dem til publikasjonen
-   automatisk, men dobbeltsjekk at de står i lista.)
-4. Hent nøkler under **Project Settings → API**:
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `service_role` (secret) → `SUPABASE_SERVICE_ROLE_KEY`
-
-> ⚠️ `service_role` brukes kun server-side i Next.js server actions.
-> Eksponer den aldri i klient-kode.
+1. Logg inn på [neon.tech](https://neon.tech) og opprett prosjekt
+   (gratisplan). Velg region nær deg (eu-central anbefales fra Norge).
+2. Åpne **SQL Editor** → lim inn alt fra `db/schema.sql` → Run. Du
+   skal nå ha tabellene `rooms`, `players`, `books`, `pages`.
+3. Hent connection string under **Connection Details** → kopier
+   "pooled connection" URI til `DATABASE_URL` i `.env.local`.
 
 ---
 
-## 2. Sett env-variabler
+## 2. Sett opp Ably (realtime)
 
-**Lokalt:** Kopier `.env.local.example` til `.env.local` og fyll inn
-nøklene. Filen er gitignorert.
+1. Lag konto på [ably.com](https://ably.com) (gratisplan: 6M
+   meldinger/mnd, 200 samtidige tilkoblinger – mer enn nok).
+2. Opprett en app → **API Keys** → kopier root-keyen (har capabilities
+   for publish + subscribe + presence). Lim inn i `ABLY_API_KEY`.
 
-**På Vercel:** Project Settings → Environment Variables. Legg inn de
-samme tre nøklene for både **Production** og **Preview**:
-
-| Navn                              | Verdi                      | Synlighet |
-| --------------------------------- | -------------------------- | --------- |
-| `NEXT_PUBLIC_SUPABASE_URL`        | https://xxxxx.supabase.co  | Klient    |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`   | eyJhbGc... (anon)          | Klient    |
-| `SUPABASE_SERVICE_ROLE_KEY`       | eyJhbGc... (service role)  | Server    |
+> ⚠️ `ABLY_API_KEY` brukes kun server-side. Klienten henter
+> kortvarige tokens via `/api/ably-token` for å unngå å eksponere
+> keyen i nettleseren.
 
 ---
 
-## 3. Deploy til Vercel (første gang)
+## 3. Sett env-variabler
+
+**Lokalt:** Kopier `.env.local.example` til `.env.local` og fyll inn.
+Filen er gitignorert.
+
+**På Vercel:** Project Settings → Environment Variables. Legg inn
+de samme to nøklene for både **Production** og **Preview**:
+
+| Navn            | Verdi                                        | Synlighet |
+| --------------- | -------------------------------------------- | --------- |
+| `DATABASE_URL`  | postgresql://USER:PASS@host/db?sslmode=require | Server  |
+| `ABLY_API_KEY`  | xVLyHQ.xxxxx:xxxxxxxxxxxxxxxxxxxxx           | Server    |
+
+---
+
+## 4. Deploy til Vercel (første gang)
 
 Domenet `lillekastellet.no` står i dag på **GitHub Pages**
 (DNS-en peker til 185.199.108–111.153). Flytt det til Vercel slik:
@@ -87,11 +85,24 @@ Domenet `lillekastellet.no` står i dag på **GitHub Pages**
    dig +short lillekastellet.no
    dig +short www.lillekastellet.no
    ```
-   Du skal se Vercels IP og CNAME.
 7. **Deaktiver GitHub Pages** i repo-settings (Pages → None) så det
    ikke blir to deploy-targets som krangler om domenet.
 
 Etter dette deployer Vercel automatisk hver gang du pusher til main.
+
+---
+
+## Arkitektur kort
+
+- **Skriving:** alle mutasjoner går via Next.js server actions i
+  `app/smartsommer/actions.ts`. Disse snakker med Neon via
+  `@neondatabase/serverless` (HTTP-driver, ingen connection pool nødvendig).
+- **Realtime:** server actions publiserer events (`room.updated`,
+  `players.updated`, `pages.updated`) på Ably-kanalen `room:<roomId>`.
+  Klientene subscriber via token-auth (`/api/ably-token`) og refetcher
+  data via server actions når events kommer.
+- **Tegninger:** lagret som base64-PNG i `pages.content`. Sendes ikke
+  via Ably (sparer messagekvota), kun "page submitted"-event.
 
 ---
 

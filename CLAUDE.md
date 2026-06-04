@@ -7,7 +7,9 @@
 
 ## Teknologi
 - **Next.js 15** (App Router) + React 19
-- **Supabase** (Postgres + Realtime) – DB-schema i `supabase/schema.sql`
+- **Neon Postgres** (serverless DB) – DB-schema i `db/schema.sql`
+- **Ably** for realtime (events publiseres av server actions,
+  klienter subscriber via token-auth fra `/api/ably-token`)
 - **Tailwind CSS** for styling
 - TypeScript
 
@@ -42,14 +44,15 @@ components/
   RoomQRCode.tsx
   Timer.tsx
 lib/
-  supabase/
-    client.ts          # Browser client (anon)
-    server.ts          # Server client (service role)
+  db.ts                # Neon-driver
+  ably-server.ts       # Server-side Ably publish
+  ably-client.ts       # Client-side Ably (token-auth)
   game.ts              # Rotasjonslogikk
   roomCode.ts
   types.ts
-supabase/
-  schema.sql           # Tabeller + RLS-policies + Realtime
+app/api/ably-token/    # Token-endepunkt for Ably-klient
+db/
+  schema.sql           # Postgres-tabeller (kjøres i Neon SQL Editor)
 public/
   lille_kastellet.jpg  # Forsidebildet
 ```
@@ -58,14 +61,13 @@ public/
 - **Hosting**: Vercel (auto-deploy fra GitHub `main`).
 - **Domenehåndtering**: Domeneshop er kun DNS-registrar; A-records og
   CNAME peker til Vercel (`76.76.21.21` / `cname.vercel-dns.com`).
-- **Env-variabler i Vercel**: `NEXT_PUBLIC_SUPABASE_URL`,
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+- **Env-variabler i Vercel**: `DATABASE_URL` (Neon), `ABLY_API_KEY` (Ably).
 
-Se `README.md` for full deploy- og Supabase-oppsett.
+Se `README.md` for full Neon-, Ably- og deploy-oppsett.
 
 ## Lokal utvikling
 ```
 npm install
-cp .env.local.example .env.local   # fyll inn Supabase-nøkler
+cp .env.local.example .env.local   # fyll inn DATABASE_URL + ABLY_API_KEY
 npm run dev
 ```

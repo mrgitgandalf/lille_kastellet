@@ -1,23 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { createAblyClient } from "@/lib/ably-client";
 import RoomQRCode from "@/components/RoomQRCode";
 import {
+  deleteRoom,
+  getPlayers,
+  getRoomById,
+  getSubmittedAuthors,
   nextRound,
   setPlayerSkipped,
   startGame,
-  deleteRoom,
 } from "../../actions";
 import type { Player, Room } from "@/lib/types";
-import { ownerSeatForRound } from "@/lib/game";
-
-type Page = {
-  book_id: string;
-  page_index: number;
-  author_player_id: string | null;
-};
 
 export default function HostRoomClient({
   initialRoom,
@@ -27,10 +23,9 @@ export default function HostRoomClient({
   initialPlayers: Player[];
 }) {
   const router = useRouter();
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [room, setRoom] = useState<Room>(initialRoom);
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
-  const [pages, setPages] = useState<Page[]>([]);
+  const [submittedIds, setSubmittedIds] = useState<Set<string>>(new Set());
   const [hostToken, setHostToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -41,79 +36,55 @@ export default function HostRoomClient({
     setHostToken(localStorage.getItem(`host_token:${room.code}`));
   }, [room.code]);
 
-  // Realtime: rom, spillere, pages
+  // Ably realtime: lytt på events for dette rommet
   useEffect(() => {
-    const channel = supabase
-      .channel(`host-room-${room.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "rooms", filter: `id=eq.${room.id}` },
-        (payload) => {
-          if (payload.new) setRoom(payload.new as Room);
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "players", filter: `room_id=eq.${room.id}` },
-        async () => {
-          const { data } = await supabase
-            .from("players")
-            .select("*")
-            .eq("room_id", room.id)
-            .order("seat_order", { ascending: true });
-          setPlayers(data ?? []);
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "pages" },
-        async () => {
-          const { data: books } = await supabase
-            .from("books")
-            .select("id")
-            .eq("room_id", room.id);
-          const bookIds = (books ?? []).map((b) => b.id);
-          if (bookIds.length === 0) return;
-          const { data } = await supabase
-            .from("pages")
-            .select("book_id, page_index, author_player_id")
-            .in("book_id", bookIds);
-          setPages(data ?? []);
-        },
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [room.id, supabase]);
+    const client = createAblyClient();
+    const channel = client.channels.get(`room:${room.id}`);
 
-  // Når runde endres, reset timer-anker
+    const refreshRoom = async () => {
+      const r = await getRoomById(room.id);
+      if (r) setRoom(r);
+    };
+    const refreshPlayers = async () => {
+      setPlayers(await getPlayers(room.id));
+    };
+    const refreshSubmissions = async () => {
+      const ids = await getSubmittedAuthors(room.id, room.current_round);
+      setSubmittedIds(new Set(ids));
+    };
+
+    channel.subscribe("room.updated", refreshRoom);
+    channel.subscribe("players.updated", refreshPlayers);
+    channel.subscribe("pages.updated", refreshSubmissions);
+
+    // Hent submissions første gang når runden er aktiv
+    if (initialRoom.state === "playing") refreshSubmissions();
+
+    return () => {
+      channel.unsubscribe();
+      client.close();
+    };
+  }, [room.id, room.current_round, initialRoom.state]);
+
+  // Når runden eller state endres, reset submissions og timer-anker
   useEffect(() => {
     startedAtRef.current = Date.now();
-  }, [room.current_round, room.state]);
-
-  // Pages innsendt for inneværende runde
-  const submittedThisRound = useMemo(() => {
-    const round = room.current_round;
-    return pages.filter((p) => p.page_index === round);
-  }, [pages, room.current_round]);
-
-  const playersWhoSubmitted = useMemo(() => {
-    if (room.state !== "playing" || !room.pages_per_book) return new Set<string>();
-    const N = room.pages_per_book;
-    const round = room.current_round;
-    const set = new Set<string>();
-    for (const p of players) {
-      const ownerSeat = ownerSeatForRound(p.seat_order, round, N);
-      const ownerPlayer = players.find((x) => x.seat_order === ownerSeat);
-      if (!ownerPlayer) continue;
-      const submitted = submittedThisRound.some(
-        (sp) => sp.author_player_id === p.id,
-      );
-      if (submitted) set.add(p.id);
+    if (room.state === "playing") {
+      (async () => {
+        const ids = await getSubmittedAuthors(room.id, room.current_round);
+        setSubmittedIds(new Set(ids));
+      })();
+    } else {
+      setSubmittedIds(new Set());
     }
-    return set;
-  }, [players, room.state, room.current_round, room.pages_per_book, submittedThisRound]);
+  }, [room.current_round, room.state, room.id]);
+
+  // Når spillet går til reveal, send host til reveal-skjermen
+  useEffect(() => {
+    if (room.state === "reveal") {
+      router.push(`/smartsommer/host/${room.code}/reveal`);
+    }
+  }, [room.state, room.code, router]);
 
   function doStart() {
     if (!hostToken) return setError("Mangler host-token. Last siden på nytt.");
@@ -132,9 +103,6 @@ export default function HostRoomClient({
     startTransition(async () => {
       try {
         await nextRound({ roomId: room.id, hostToken });
-        if (room.pages_per_book && room.current_round + 1 >= room.pages_per_book) {
-          router.push(`/smartsommer/host/${room.code}/reveal`);
-        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Feil.");
       }
@@ -165,13 +133,6 @@ export default function HostRoomClient({
     });
   }
 
-  // Når spillet går til reveal, send host til reveal-skjermen
-  useEffect(() => {
-    if (room.state === "reveal") {
-      router.push(`/smartsommer/host/${room.code}/reveal`);
-    }
-  }, [room.state, room.code, router]);
-
   const joinUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/smartsommer/spill/${room.code}`
@@ -180,9 +141,7 @@ export default function HostRoomClient({
   return (
     <main className="flex flex-col gap-6">
       <header className="text-center">
-        <p className="text-sm uppercase tracking-widest text-neutral-500">
-          Romkode
-        </p>
+        <p className="text-sm uppercase tracking-widest text-neutral-500">Romkode</p>
         <p className="text-6xl font-bold tracking-[0.3em]">{room.code}</p>
       </header>
 
@@ -196,9 +155,7 @@ export default function HostRoomClient({
           </div>
 
           <section className="rounded-2xl border border-neutral-200 p-4">
-            <h2 className="mb-2 font-semibold">
-              Spillere ({players.length})
-            </h2>
+            <h2 className="mb-2 font-semibold">Spillere ({players.length})</h2>
             {players.length === 0 ? (
               <p className="text-sm text-neutral-500">Venter på spillere...</p>
             ) : (
@@ -244,7 +201,7 @@ export default function HostRoomClient({
         <PlayingHostView
           room={room}
           players={players}
-          playersWhoSubmitted={playersWhoSubmitted}
+          submittedIds={submittedIds}
           onNext={doNext}
           onSkip={doSkip}
           pending={pending}
@@ -259,7 +216,7 @@ export default function HostRoomClient({
 function PlayingHostView({
   room,
   players,
-  playersWhoSubmitted,
+  submittedIds,
   onNext,
   onSkip,
   pending,
@@ -268,7 +225,7 @@ function PlayingHostView({
 }: {
   room: Room;
   players: Player[];
-  playersWhoSubmitted: Set<string>;
+  submittedIds: Set<string>;
   onNext: () => void;
   onSkip: (id: string, skipped: boolean) => void;
   pending: boolean;
@@ -277,7 +234,7 @@ function PlayingHostView({
 }) {
   const N = room.pages_per_book ?? players.length;
   const round = room.current_round;
-  const totalSubmitted = playersWhoSubmitted.size;
+  const totalSubmitted = submittedIds.size;
 
   return (
     <>
@@ -294,7 +251,7 @@ function PlayingHostView({
         <h2 className="mb-2 font-semibold">Spillere</h2>
         <ul className="flex flex-col gap-2">
           {players.map((p) => {
-            const submitted = playersWhoSubmitted.has(p.id);
+            const submitted = submittedIds.has(p.id);
             return (
               <li
                 key={p.id}
