@@ -22,18 +22,28 @@ const createRoomSchema = z.object({
     (n) => n === 0 || (n >= 15 && n <= 600),
     "roundSeconds må være 0 (ingen tid) eller mellom 15 og 600",
   ),
+  guessPoints: z.coerce.number().int().min(0).max(20),
+  drawerPoints: z.coerce.number().int().min(0).max(20),
 });
 
 export async function createRoom(input: {
   roundSeconds: number;
+  guessPoints: number;
+  drawerPoints: number;
 }): Promise<{ code: string; hostToken: string }> {
   const parsed = createRoomSchema.parse(input);
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = generateRoomCode();
     try {
       const rows = (await sql`
-        insert into rooms (code, game_type, mode, round_seconds)
-        values (${code}, 'gjettekampen', 'player_prompts', ${parsed.roundSeconds})
+        insert into rooms (
+          code, game_type, mode, round_seconds,
+          gjette_guess_points, gjette_drawer_points
+        )
+        values (
+          ${code}, 'gjettekampen', 'player_prompts', ${parsed.roundSeconds},
+          ${parsed.guessPoints}, ${parsed.drawerPoints}
+        )
         returning code, host_token
       `) as { code: string; host_token: string }[];
       if (rows[0]) return { code: rows[0].code, hostToken: rows[0].host_token };
@@ -461,6 +471,12 @@ export async function getGuessesForTurn(turnId: string): Promise<GjetteGuess[]> 
 }
 
 export async function getStandings(roomId: string): Promise<Standing[]> {
+  const roomRows = (await sql`
+    select gjette_guess_points, gjette_drawer_points from rooms where id = ${roomId}
+  `) as { gjette_guess_points: number; gjette_drawer_points: number }[];
+  const guessPoints = roomRows[0]?.gjette_guess_points ?? 1;
+  const drawerPoints = roomRows[0]?.gjette_drawer_points ?? 3;
+
   const rows = (await sql`
     with finished as (
       select drawer_player_id, winner_player_id
@@ -483,7 +499,7 @@ export async function getStandings(roomId: string): Promise<Standing[]> {
   return rows
     .map((r) => ({
       ...r,
-      score: r.draws_won * 3 + r.guesses_won * 1,
+      score: r.draws_won * drawerPoints + r.guesses_won * guessPoints,
     }))
     .sort((a, b) => b.score - a.score);
 }

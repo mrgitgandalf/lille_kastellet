@@ -168,11 +168,13 @@ export default function PlayerTurnClient({
     });
   }
 
-  if (!tokenLoaded) return null;
-  if (!myPlayer) {
-    router.push(`/gjettekampen/spill/${room.code}`);
-    return null;
-  }
+  useEffect(() => {
+    if (tokenLoaded && !myPlayer) {
+      router.push(`/gjettekampen/spill/${room.code}`);
+    }
+  }, [tokenLoaded, myPlayer, room.code, router]);
+
+  if (!tokenLoaded || !myPlayer) return null;
 
   if (room.state === "finished") {
     return (

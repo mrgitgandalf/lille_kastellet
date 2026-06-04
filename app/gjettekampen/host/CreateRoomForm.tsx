@@ -7,6 +7,8 @@ import { createRoom } from "../actions";
 export default function CreateRoomForm() {
   const router = useRouter();
   const [roundSeconds, setRoundSeconds] = useState(180);
+  const [guessPoints, setGuessPoints] = useState(1);
+  const [drawerPoints, setDrawerPoints] = useState(3);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -15,7 +17,11 @@ export default function CreateRoomForm() {
     setError(null);
     startTransition(async () => {
       try {
-        const { code, hostToken } = await createRoom({ roundSeconds });
+        const { code, hostToken } = await createRoom({
+          roundSeconds,
+          guessPoints,
+          drawerPoints,
+        });
         if (typeof window !== "undefined") {
           localStorage.setItem(`host_token:${code}`, hostToken);
         }
@@ -55,6 +61,40 @@ export default function CreateRoomForm() {
         )}
         <span className="text-xs text-neutral-500">
           Maks 3 min (240 s) anbefales. Du kan alltid avslutte en runde manuelt.
+        </span>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-4 rounded-2xl border border-neutral-200 p-4">
+        <legend className="px-2 text-sm font-semibold">Poenggiving</legend>
+        <label className="flex flex-col gap-2">
+          <span className="text-sm">
+            Poeng til første riktige gjetter: <strong>{guessPoints}p</strong>
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={10}
+            step={1}
+            value={guessPoints}
+            onChange={(e) => setGuessPoints(parseInt(e.target.value, 10))}
+          />
+        </label>
+        <label className="flex flex-col gap-2">
+          <span className="text-sm">
+            Poeng til tegner når noen gjetter riktig:{" "}
+            <strong>{drawerPoints}p</strong>
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={10}
+            step={1}
+            value={drawerPoints}
+            onChange={(e) => setDrawerPoints(parseInt(e.target.value, 10))}
+          />
+        </label>
+        <span className="text-xs text-neutral-500">
+          Standard: 1p til gjetter, 3p til tegner. Sett til 0 for å skru av.
         </span>
       </fieldset>
 

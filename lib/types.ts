@@ -14,6 +14,8 @@ export type Room = {
   round_seconds: number;
   current_round: number;
   pages_per_book: number | null;
+  gjette_guess_points: number;
+  gjette_drawer_points: number;
   created_at: string;
 };
 
@@ -86,4 +88,9 @@ export type Standing = {
   draws_won: number;
   guesses_won: number;
   score: number;
+};
+
+export type GjetteScoring = {
+  guessPoints: number;
+  drawerPoints: number;
 };

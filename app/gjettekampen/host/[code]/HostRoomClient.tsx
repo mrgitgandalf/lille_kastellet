@@ -374,7 +374,11 @@ export default function HostRoomClient({
           disabled={pending}
           className="flex-1 rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
         >
-          {remaining <= 1 ? "Avslutt og vis resultat" : "Neste runde"}
+          {remaining === 0
+            ? "Avslutt og vis resultat"
+            : activeTurn
+            ? "Neste runde"
+            : "Start neste runde"}
         </button>
         {activeTurn && (
           <button
