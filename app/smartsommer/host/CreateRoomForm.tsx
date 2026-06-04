@@ -92,22 +92,35 @@ export default function CreateRoomForm() {
         </label>
       )}
 
-      <label className="flex flex-col gap-2">
-        <span className="text-sm font-semibold">
-          Tid per runde: {roundSeconds} sekunder
-        </span>
-        <input
-          type="range"
-          min={30}
-          max={240}
-          step={15}
-          value={roundSeconds}
-          onChange={(e) => setRoundSeconds(parseInt(e.target.value, 10))}
-        />
+      <fieldset className="flex flex-col gap-3 rounded-2xl border border-neutral-200 p-4">
+        <legend className="px-2 text-sm font-semibold">Tid per runde</legend>
+        <label className="flex cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            checked={roundSeconds === 0}
+            onChange={(e) => setRoundSeconds(e.target.checked ? 0 : 90)}
+          />
+          <span className="text-sm">Ingen tidsbegrensning</span>
+        </label>
+        {roundSeconds > 0 && (
+          <label className="flex flex-col gap-2">
+            <span className="text-sm">
+              {roundSeconds} sekunder per runde
+            </span>
+            <input
+              type="range"
+              min={30}
+              max={240}
+              step={15}
+              value={roundSeconds}
+              onChange={(e) => setRoundSeconds(parseInt(e.target.value, 10))}
+            />
+          </label>
+        )}
         <span className="text-xs text-neutral-500">
           Tiden er rådgivende – du som vert bestemmer når runden går videre.
         </span>
-      </label>
+      </fieldset>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 

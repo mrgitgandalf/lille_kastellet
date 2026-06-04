@@ -13,7 +13,7 @@ create table if not exists public.rooms (
   mode text not null default 'player_prompts'
     check (mode in ('player_prompts', 'preset_prompts')),
   preset_prompts text[] not null default '{}',
-  round_seconds int not null default 90 check (round_seconds between 15 and 600),
+  round_seconds int not null default 90 check (round_seconds = 0 or round_seconds between 15 and 600),
   current_round int not null default 0,
   pages_per_book int,
   created_at timestamptz not null default now()

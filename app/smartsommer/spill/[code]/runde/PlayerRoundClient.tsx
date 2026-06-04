@@ -129,10 +129,12 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
         <p className="text-neutral-600">
           Venter på de andre. Host starter neste runde.
         </p>
-        <Timer
-          startedAt={startedAtRef.current}
-          durationSeconds={room.round_seconds}
-        />
+        {room.round_seconds > 0 && (
+          <Timer
+            startedAt={startedAtRef.current}
+            durationSeconds={room.round_seconds}
+          />
+        )}
       </main>
     );
   }
@@ -143,10 +145,12 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
         <p className="text-sm text-neutral-500">
           Runde {round + 1} av {room.pages_per_book}
         </p>
-        <Timer
-          startedAt={startedAtRef.current}
-          durationSeconds={room.round_seconds}
-        />
+        {room.round_seconds > 0 && (
+          <Timer
+            startedAt={startedAtRef.current}
+            durationSeconds={room.round_seconds}
+          />
+        )}
       </header>
 
       {previousContent && (

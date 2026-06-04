@@ -18,7 +18,10 @@ import type { Book, Page, Player, Room, RoomMode } from "@/lib/types";
 const createRoomSchema = z.object({
   mode: z.enum(["player_prompts", "preset_prompts"]),
   presetPrompts: z.string().max(50_000).optional().default(""),
-  roundSeconds: z.coerce.number().int().min(15).max(600),
+  roundSeconds: z.coerce.number().int().refine(
+    (n) => n === 0 || (n >= 15 && n <= 600),
+    "roundSeconds må være 0 (ingen tid) eller mellom 15 og 600",
+  ),
 });
 
 export async function createRoom(input: {
