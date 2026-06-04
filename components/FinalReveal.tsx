@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Standing } from "@/lib/types";
 import { Confetti } from "./Confetti";
@@ -35,25 +36,50 @@ export function FinalReveal({ standings }: Props) {
     );
   }
 
-  const winner = standings[0];
+  const topScore = standings[0]?.score ?? 0;
+  const winners = standings.filter(
+    (s) => s.score === topScore && s.score > 0,
+  );
+  const isTie = winners.length > 1;
+  const hasWinner = winners.length > 0;
+
   return (
     <div className="flex flex-col gap-6 py-6">
       <Confetti trigger={confettiTick} intensity="large" />
-      {winner && (
+      {hasWinner ? (
         <div className="rounded-2xl bg-yellow-100 p-6 text-center ring-2 ring-yellow-400">
           <p className="text-sm font-semibold uppercase tracking-wide text-yellow-900">
-            Vinner
+            {isTie ? `Uavgjort på topp (${winners.length} vinnere)` : "Vinner"}
           </p>
-          <p className="mt-2 text-5xl font-black text-neutral-900">
-            👑 {winner.name}
+          <div className="mt-2 flex flex-col gap-1">
+            {winners.map((w) => (
+              <p
+                key={w.player_id}
+                className="text-5xl font-black text-neutral-900"
+              >
+                👑 {w.name}
+              </p>
+            ))}
+          </div>
+          <p className="mt-2 text-lg text-neutral-700">{topScore} poeng</p>
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-neutral-100 p-6 text-center">
+          <p className="text-2xl font-semibold text-neutral-700">
+            Ingen scoret poeng 🤷
           </p>
-          <p className="mt-1 text-lg text-neutral-700">{winner.score} poeng</p>
         </div>
       )}
       <div>
         <h2 className="mb-3 text-lg font-semibold">Sluttstilling</h2>
         <Standings standings={standings} highlightLeader />
       </div>
+      <Link
+        href="/gjettekampen"
+        className="self-center rounded-lg border border-neutral-300 px-4 py-2 text-sm text-neutral-700"
+      >
+        Tilbake til Gjettekampen
+      </Link>
     </div>
   );
 }
