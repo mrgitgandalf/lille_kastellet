@@ -282,8 +282,8 @@ export default function HostRoomClient({
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-sm"
           />
           <p className="mt-2 text-xs text-neutral-500">
-            Trenger minst {Math.max(2, players.length)} ord (én per spiller).
-            Overskudd brukes ikke.
+            Alle ord brukes — spillerne tegner etter tur. Med flere ord enn
+            spillere tegner noen flere ganger.
           </p>
         </section>
 
@@ -292,15 +292,13 @@ export default function HostRoomClient({
         <button
           type="button"
           onClick={doStart}
-          disabled={
-            pending || players.length < 2 || words.length < players.length
-          }
+          disabled={pending || players.length < 2 || words.length < 1}
           className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
         >
           {players.length < 2
             ? `Minst 2 spillere må joine (${players.length}/2)`
-            : words.length < players.length
-            ? `Trenger ${players.length - words.length} ord til`
+            : words.length < 1
+            ? "Trenger minst ett ord"
             : pending
             ? "Starter..."
             : "Start spill"}
