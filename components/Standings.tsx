@@ -1,0 +1,43 @@
+"use client";
+
+import type { Standing } from "@/lib/types";
+
+type Props = {
+  standings: Standing[];
+  highlightLeader?: boolean;
+};
+
+export function Standings({ standings, highlightLeader }: Props) {
+  if (standings.length === 0) {
+    return <p className="text-sm text-neutral-500">Ingen poeng ennå.</p>;
+  }
+  const max = standings[0]?.score ?? 0;
+  return (
+    <ol className="flex flex-col gap-1.5">
+      {standings.map((s, i) => {
+        const isLeader = highlightLeader && s.score === max && s.score > 0;
+        return (
+          <li
+            key={s.player_id}
+            className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm ${
+              isLeader
+                ? "border-yellow-400 bg-yellow-50 font-semibold"
+                : "border-neutral-200 bg-white"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <span className="text-neutral-400">{i + 1}.</span>
+              <span>{s.name}</span>
+              {isLeader && <span>👑</span>}
+            </span>
+            <span className="flex items-center gap-3 text-neutral-600">
+              <span title="Tegninger gjettet">✏️ {s.draws_won}</span>
+              <span title="Riktige gjetninger">🎯 {s.guesses_won}</span>
+              <span className="text-base font-semibold text-neutral-900">{s.score}p</span>
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}

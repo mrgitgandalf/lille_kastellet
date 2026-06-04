@@ -16,7 +16,11 @@ function getAblyRest(): Ably.Rest {
 export type RoomEvent =
   | "room.updated"
   | "players.updated"
-  | "pages.updated";
+  | "pages.updated"
+  | "turn.started"
+  | "turn.ended"
+  | "guess.posted"
+  | "game.finished";
 
 export async function publishRoomEvent(
   roomId: string,

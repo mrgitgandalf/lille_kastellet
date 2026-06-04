@@ -71,7 +71,8 @@ export async function joinRoom(input: {
   const parsed = joinRoomSchema.parse(input);
 
   const roomRows = (await sql`
-    select id, state from rooms where code = ${parsed.code}
+    select id, state from rooms
+    where code = ${parsed.code} and game_type = 'tegnekjeden'
   `) as { id: string; state: string }[];
   const room = roomRows[0];
   if (!room) throw new Error("Fant ikke rom med den koden.");
@@ -285,7 +286,9 @@ export async function deleteRoom(input: {
 // ===== Queries (kalt fra klient-komponenter ved Ably-events) ==========
 
 export async function getRoomByCode(code: string): Promise<Room | null> {
-  const rows = (await sql`select * from rooms where code = ${code}`) as Room[];
+  const rows = (await sql`
+    select * from rooms where code = ${code} and game_type = 'tegnekjeden'
+  `) as Room[];
   return rows[0] ?? null;
 }
 
