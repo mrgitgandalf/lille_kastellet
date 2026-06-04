@@ -27,7 +27,7 @@ export default function CreateRoomForm() {
         if (typeof window !== "undefined") {
           localStorage.setItem(`host_token:${code}`, hostToken);
         }
-        router.push(`/smartsommer/host/${code}`);
+        router.push(`/tegnekjeden/host/${code}`);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Noe gikk galt.");
       }

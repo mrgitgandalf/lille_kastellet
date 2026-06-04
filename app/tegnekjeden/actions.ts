@@ -150,7 +150,7 @@ export async function startGame(input: {
   `;
 
   await publishRoomEvent(room.id, "room.updated");
-  revalidatePath(`/smartsommer/host/${room.code}`);
+  revalidatePath(`/tegnekjeden/host/${room.code}`);
 }
 
 const submitPageSchema = z.object({
@@ -266,7 +266,7 @@ export async function nextRound(input: {
   `;
 
   await publishRoomEvent(room.id, "room.updated");
-  revalidatePath(`/smartsommer/host/${room.code}`);
+  revalidatePath(`/tegnekjeden/host/${room.code}`);
 }
 
 export async function deleteRoom(input: {

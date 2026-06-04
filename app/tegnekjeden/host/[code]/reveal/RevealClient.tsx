@@ -93,7 +93,7 @@ export default function RevealClient({
     startTransition(async () => {
       try {
         await deleteRoom({ roomId: room.id, hostToken });
-        router.push("/smartsommer");
+        router.push("/tegnekjeden");
       } catch (err) {
         alert(err instanceof Error ? err.message : "Feil ved sletting.");
       }

@@ -81,7 +81,7 @@ export default function HostRoomClient({
   // Når spillet går til reveal, send host til reveal-skjermen
   useEffect(() => {
     if (room.state === "reveal") {
-      router.push(`/smartsommer/host/${room.code}/reveal`);
+      router.push(`/tegnekjeden/host/${room.code}/reveal`);
     }
   }, [room.state, room.code, router]);
 
@@ -114,7 +114,7 @@ export default function HostRoomClient({
     startTransition(async () => {
       try {
         await deleteRoom({ roomId: room.id, hostToken });
-        router.push("/smartsommer");
+        router.push("/tegnekjeden");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Feil.");
       }
@@ -123,7 +123,7 @@ export default function HostRoomClient({
 
   const joinUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/smartsommer/spill/${room.code}`
+      ? `${window.location.origin}/tegnekjeden/spill/${room.code}`
       : "";
 
   return (

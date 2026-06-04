@@ -1,7 +1,7 @@
 # Lille Kastellet
 
 Statisk forside for **lillekastellet.no** + spillappen
-**Smartsommer** (Telephone Pictionary) på `/smartsommer`.
+**Tegnekjeden** (Telephone Pictionary) på `/tegnekjeden`.
 
 Stack: Next.js 15 (App Router) · React 19 · Tailwind CSS · TypeScript ·
 **Neon Postgres** (serverless DB) · **Ably** (realtime). Deploy: Vercel.
@@ -18,7 +18,7 @@ npm run dev
 ```
 
 Appen kjører på http://localhost:3000. Spillet ligger under
-http://localhost:3000/smartsommer.
+http://localhost:3000/tegnekjeden.
 
 ---
 
@@ -95,7 +95,7 @@ Etter dette deployer Vercel automatisk hver gang du pusher til main.
 ## Arkitektur kort
 
 - **Skriving:** alle mutasjoner går via Next.js server actions i
-  `app/smartsommer/actions.ts`. Disse snakker med Neon via
+  `app/tegnekjeden/actions.ts`. Disse snakker med Neon via
   `@neondatabase/serverless` (HTTP-driver, ingen connection pool nødvendig).
 - **Realtime:** server actions publiserer events (`room.updated`,
   `players.updated`, `pages.updated`) på Ably-kanalen `room:<roomId>`.
@@ -108,7 +108,7 @@ Etter dette deployer Vercel automatisk hver gang du pusher til main.
 
 ## Bruke spillet på sommeravslutningen
 
-1. Gå til `lillekastellet.no/smartsommer` på laptop, klikk **Opprett
+1. Gå til `lillekastellet.no/tegnekjeden` på laptop, klikk **Opprett
    rom**. Velg modus (egne setninger eller forhåndsdefinerte) og
    rundetid. Lim evt. inn setningene dine (én per linje).
 2. Vis 4-sifret kode + QR-kode på prosjektoren.

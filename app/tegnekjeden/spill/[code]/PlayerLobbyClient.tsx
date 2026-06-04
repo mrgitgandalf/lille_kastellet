@@ -51,7 +51,7 @@ export default function PlayerLobbyClient({
 
   useEffect(() => {
     if (room.state === "playing" && myPlayer) {
-      router.push(`/smartsommer/spill/${room.code}/runde`);
+      router.push(`/tegnekjeden/spill/${room.code}/runde`);
     }
   }, [room.state, myPlayer, room.code, router]);
 

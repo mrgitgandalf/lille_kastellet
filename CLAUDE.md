@@ -2,7 +2,7 @@
 
 ## Prosjekt
 - Statisk forside for domenet lillekastellet.no.
-- **Smartsommer** – Telephone Pictionary-spill på `/smartsommer`
+- **Tegnekjeden** – Telephone Pictionary-spill på `/tegnekjeden`
   for teambuilding (3–20 spillere på mobil, host på laptop).
 
 ## Teknologi
@@ -19,7 +19,7 @@ app/
   layout.tsx           # Felles HTML-skall
   page.tsx             # Forsiden (lillekastellet.no)
   globals.css
-  smartsommer/         # Spillet
+  tegnekjeden/         # Spillet
     actions.ts         # Server actions: createRoom, joinRoom, startGame, submitPage, nextRound...
     layout.tsx
     page.tsx           # Landing: join eller host

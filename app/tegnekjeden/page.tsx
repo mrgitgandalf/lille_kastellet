@@ -1,11 +1,11 @@
 import Link from "next/link";
 import JoinForm from "./JoinForm";
 
-export default function SmartsommerLanding() {
+export default function TegnekjedenLanding() {
   return (
     <main className="flex flex-col gap-8">
       <header className="text-center">
-        <h1 className="text-3xl font-semibold">Smartsommer</h1>
+        <h1 className="text-3xl font-semibold">Tegnekjeden</h1>
         <p className="mt-2 text-neutral-600">
           Telefon-pictionary for teamet. Bli med via 4-sifret kode, eller start
           et nytt spill som vert.
@@ -24,7 +24,7 @@ export default function SmartsommerLanding() {
           prosjektor anbefales).
         </p>
         <Link
-          href="/smartsommer/host"
+          href="/tegnekjeden/host"
           className="inline-block rounded-lg bg-neutral-900 px-4 py-2 text-white"
         >
           Opprett rom
