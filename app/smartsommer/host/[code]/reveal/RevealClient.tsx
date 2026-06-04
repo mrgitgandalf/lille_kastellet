@@ -123,7 +123,7 @@ export default function RevealClient({
         </p>
       </header>
 
-      <section className="flex min-h-[50vh] flex-1 flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <section className="flex h-[68vh] flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
         {currentPage ? (
           currentPage.kind === "text" ? (
             <p className="max-w-3xl text-center text-3xl font-medium">
@@ -133,7 +133,7 @@ export default function RevealClient({
             <img
               src={currentPage.content}
               alt="Tegning"
-              className="max-h-[60vh] w-auto rounded-lg"
+              className="max-h-[55vh] w-auto rounded-lg"
             />
           )
         ) : (

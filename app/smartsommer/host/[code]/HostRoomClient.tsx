@@ -10,7 +10,6 @@ import {
   getRoomById,
   getSubmittedAuthors,
   nextRound,
-  setPlayerSkipped,
   startGame,
 } from "../../actions";
 import type { Player, Room } from "@/lib/types";
@@ -109,17 +108,6 @@ export default function HostRoomClient({
     });
   }
 
-  function doSkip(playerId: string, skipped: boolean) {
-    if (!hostToken) return;
-    startTransition(async () => {
-      try {
-        await setPlayerSkipped({ roomId: room.id, hostToken, playerId, skipped });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Feil.");
-      }
-    });
-  }
-
   function doDelete() {
     if (!hostToken) return;
     if (!confirm("Slett dette rommet og alle data? Kan ikke angres.")) return;
@@ -177,11 +165,11 @@ export default function HostRoomClient({
           <button
             type="button"
             onClick={doStart}
-            disabled={pending || players.length < 3}
+            disabled={pending || players.length < 2}
             className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
           >
-            {players.length < 3
-              ? `Minst 3 spillere må joine (${players.length}/3)`
+            {players.length < 2
+              ? `Minst 2 spillere må joine (${players.length}/2)`
               : pending
               ? "Starter..."
               : "Start spill"}
@@ -203,7 +191,6 @@ export default function HostRoomClient({
           players={players}
           submittedIds={submittedIds}
           onNext={doNext}
-          onSkip={doSkip}
           pending={pending}
           error={error}
           onDelete={doDelete}
@@ -218,7 +205,6 @@ function PlayingHostView({
   players,
   submittedIds,
   onNext,
-  onSkip,
   pending,
   error,
   onDelete,
@@ -227,7 +213,6 @@ function PlayingHostView({
   players: Player[];
   submittedIds: Set<string>;
   onNext: () => void;
-  onSkip: (id: string, skipped: boolean) => void;
   pending: boolean;
   error: string | null;
   onDelete: () => void;
@@ -264,17 +249,7 @@ function PlayingHostView({
                     }`}
                   />
                   <span>{p.name}</span>
-                  {p.is_skipped && (
-                    <span className="text-xs text-amber-600">(merket hoppet over)</span>
-                  )}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => onSkip(p.id, !p.is_skipped)}
-                  className="text-xs text-neutral-500 underline"
-                >
-                  {p.is_skipped ? "Angre" : "Marker"}
-                </button>
               </li>
             );
           })}

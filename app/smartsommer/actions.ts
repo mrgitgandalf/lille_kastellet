@@ -112,8 +112,8 @@ export async function startGame(input: {
     select * from players where room_id = ${room.id}
     order by seat_order asc
   `) as Player[];
-  if (players.length < 3) {
-    throw new Error("Minst 3 spillere må være med før spillet kan starte.");
+  if (players.length < 2) {
+    throw new Error("Minst 2 spillere må være med før spillet kan starte.");
   }
   const N = players.length;
 
@@ -264,24 +264,6 @@ export async function nextRound(input: {
 
   await publishRoomEvent(room.id, "room.updated");
   revalidatePath(`/smartsommer/host/${room.code}`);
-}
-
-export async function setPlayerSkipped(input: {
-  roomId: string;
-  hostToken: string;
-  playerId: string;
-  skipped: boolean;
-}): Promise<void> {
-  const ok = (await sql`
-    select id from rooms
-    where id = ${input.roomId} and host_token = ${input.hostToken}
-  `) as { id: string }[];
-  if (!ok[0]) throw new Error("Uautorisert.");
-  await sql`
-    update players set is_skipped = ${input.skipped}
-    where id = ${input.playerId} and room_id = ${input.roomId}
-  `;
-  await publishRoomEvent(input.roomId, "players.updated");
 }
 
 export async function deleteRoom(input: {
