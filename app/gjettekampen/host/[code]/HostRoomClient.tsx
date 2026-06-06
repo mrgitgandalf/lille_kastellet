@@ -73,6 +73,7 @@ export default function HostRoomClient({
   const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
   const [timeoutMessage, setTimeoutMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [, startSaveWordsTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
   > | null>(null);
@@ -158,18 +159,15 @@ export default function HostRoomClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room.id, activeTurn?.id]);
 
+  // Autosave på blur — kjører i egen transition så Start-knappen ikke
+  // disables av et samtidig blur-trigget setWords-kall.
   function doSetWords() {
     if (!hostToken) return;
     setError(null);
-    startTransition(async () => {
+    startSaveWordsTransition(async () => {
       try {
-        const { wordCount } = await setWords({
-          roomId: room.id,
-          hostToken,
-          wordsText,
-        });
+        await setWords({ roomId: room.id, hostToken, wordsText });
         setWordsState(await getWords(room.id));
-        if (wordCount === 0) setError("Lim inn minst ett ord.");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Feil.");
       }
@@ -181,6 +179,9 @@ export default function HostRoomClient({
     setError(null);
     startTransition(async () => {
       try {
+        // Lagre nyeste ord-input før vi starter (i tilfelle bruker
+        // klikker Start uten å ha blurret tekstområdet).
+        await setWords({ roomId: room.id, hostToken, wordsText });
         await startGame({ roomId: room.id, hostToken });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Kunne ikke starte.");
@@ -234,6 +235,11 @@ export default function HostRoomClient({
       }
     });
   }
+
+  const liveWordCount = wordsText
+    .split("\n")
+    .map((w) => w.trim())
+    .filter((w) => w.length > 0).length;
 
   const joinUrl =
     typeof window !== "undefined"
@@ -292,7 +298,7 @@ export default function HostRoomClient({
 
         <section className="rounded-2xl border border-neutral-200 p-4">
           <h2 className="mb-2 font-semibold">
-            Ord ({words.length}) — én per linje
+            Ord ({liveWordCount}) — én per linje
           </h2>
           <textarea
             value={wordsText}
@@ -303,12 +309,12 @@ export default function HostRoomClient({
             className="w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-sm"
           />
           <p className="mt-2 text-xs text-neutral-500">
-            {players.length >= 2 && words.length >= players.length
+            {players.length >= 2 && liveWordCount >= players.length
               ? `Spillet bruker ${
-                  Math.floor(words.length / players.length) * players.length
-                } ord (${Math.floor(words.length / players.length)} per spiller). ${
-                  words.length % players.length > 0
-                    ? `${words.length % players.length} overskudd-ord brukes ikke.`
+                  Math.floor(liveWordCount / players.length) * players.length
+                } ord (${Math.floor(liveWordCount / players.length)} per spiller). ${
+                  liveWordCount % players.length > 0
+                    ? `${liveWordCount % players.length} overskudd-ord brukes ikke.`
                     : ""
                 }`
               : `Trenger minst ${Math.max(2, players.length)} ord (én per spiller).`}
@@ -321,14 +327,14 @@ export default function HostRoomClient({
           type="button"
           onClick={doStart}
           disabled={
-            pending || players.length < 2 || words.length < players.length
+            pending || players.length < 2 || liveWordCount < players.length
           }
           className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
         >
           {players.length < 2
             ? `Minst 2 spillere må joine (${players.length}/2)`
-            : words.length < players.length
-            ? `Trenger ${players.length - words.length} ord til`
+            : liveWordCount < players.length
+            ? `Trenger ${players.length - liveWordCount} ord til`
             : pending
             ? "Starter..."
             : "Start spill"}
