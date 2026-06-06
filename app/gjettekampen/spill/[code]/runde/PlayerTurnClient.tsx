@@ -282,8 +282,9 @@ export default function PlayerTurnClient({
             mode="draw"
             onStrokeComplete={publishStroke}
             onClear={publishClear}
+            theme="retro"
           />
-          <p className="text-center text-sm text-neutral-500">
+          <p className="text-center text-sm font-semibold text-stone-600">
             Tegn ordet! Du kan ikke gjette på din egen tegning.
           </p>
         </>
@@ -293,6 +294,7 @@ export default function PlayerTurnClient({
             mode="spectate"
             externalStrokes={externalStrokes}
             hideToolbar
+            theme="retro"
           />
           <form onSubmit={doGuess} className="flex gap-2">
             <input

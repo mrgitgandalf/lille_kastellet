@@ -429,6 +429,7 @@ export default function HostRoomClient({
           mode="spectate"
           externalStrokes={externalStrokes}
           hideToolbar
+          theme="retro"
         />
       )}
 

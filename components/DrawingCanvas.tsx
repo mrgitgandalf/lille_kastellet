@@ -19,6 +19,7 @@ export type DrawingCanvasProps = {
   mode?: "draw" | "spectate";
   hideToolbar?: boolean;
   onClear?: () => void;
+  theme?: "default" | "retro";
 };
 
 const COLORS = ["#171717", "#dc2626", "#2563eb", "#16a34a", "#facc15", "#ffffff"];
@@ -26,7 +27,14 @@ const SIZES = [3, 6, 12];
 
 export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>(
   function DrawingCanvas(
-    { onStrokeComplete, externalStrokes, mode = "draw", hideToolbar, onClear },
+    {
+      onStrokeComplete,
+      externalStrokes,
+      mode = "draw",
+      hideToolbar,
+      onClear,
+      theme = "default",
+    },
     ref
   ) {
     const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -131,11 +139,54 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
     }));
 
     const showToolbar = !hideToolbar && !isSpectate;
+    const isRetro = theme === "retro";
+
+    const frameCls = isRetro
+      ? "relative w-full overflow-hidden rounded-2xl border-4 border-violet-950 bg-white shadow-[6px_6px_0_0_#0b0420]"
+      : "relative w-full overflow-hidden rounded-xl border border-neutral-300 bg-white";
+
+    const toolbarCls = isRetro
+      ? "flex flex-wrap items-center gap-2 rounded-xl border-4 border-stone-700/50 bg-[#fdf5e0] p-2 shadow-[3px_3px_0_0_rgba(0,0,0,0.15)]"
+      : "flex flex-wrap items-center gap-2";
+
+    const labelCls = isRetro
+      ? "text-xs font-black uppercase tracking-wide text-stone-800"
+      : "text-xs font-semibold text-neutral-600";
+
+    const colorBtnCls = (selected: boolean) =>
+      isRetro
+        ? `h-9 w-9 rounded-lg border-4 ${
+            selected
+              ? "border-violet-950 shadow-[2px_2px_0_0_#0b0420]"
+              : "border-stone-700/40"
+          }`
+        : `h-8 w-8 rounded-full border ${
+            selected
+              ? "ring-2 ring-neutral-900 ring-offset-2"
+              : "border-neutral-300"
+          }`;
+
+    const sizeBtnCls = (selected: boolean) =>
+      isRetro
+        ? `flex h-9 w-9 items-center justify-center rounded-lg border-4 bg-white ${
+            selected
+              ? "border-violet-950 shadow-[2px_2px_0_0_#0b0420]"
+              : "border-stone-700/40"
+          }`
+        : `flex h-8 w-8 items-center justify-center rounded-full border ${
+            selected
+              ? "ring-2 ring-neutral-900 ring-offset-2"
+              : "border-neutral-300"
+          }`;
+
+    const actionBtnCls = isRetro
+      ? "rounded-lg border-4 border-violet-950 bg-violet-800 px-3 py-1 text-sm font-black uppercase tracking-wide text-violet-50 shadow-[3px_3px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_#0b0420]"
+      : "rounded-lg border border-neutral-300 px-3 py-1.5 text-sm";
 
     return (
       <div ref={wrapRef} className="flex flex-col gap-3">
         <div
-          className="relative w-full overflow-hidden rounded-xl border border-neutral-300 bg-white"
+          className={frameCls}
           style={{ aspectRatio: `${LOGICAL_W} / ${LOGICAL_H}` }}
         >
           <canvas
@@ -155,29 +206,25 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
         </div>
 
         {showToolbar && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-neutral-600">Farge</span>
+          <div className={toolbarCls}>
+            <span className={labelCls}>Farge</span>
             {COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(c)}
                 aria-label={`Farge ${c}`}
-                className={`h-8 w-8 rounded-full border ${
-                  color === c ? "ring-2 ring-neutral-900 ring-offset-2" : "border-neutral-300"
-                }`}
+                className={colorBtnCls(color === c)}
                 style={{ backgroundColor: c }}
               />
             ))}
-            <span className="ml-3 text-xs font-semibold text-neutral-600">Tykkelse</span>
+            <span className={`${labelCls} ml-3`}>Tykkelse</span>
             {SIZES.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => setSize(s)}
-                className={`flex h-8 w-8 items-center justify-center rounded-full border ${
-                  size === s ? "ring-2 ring-neutral-900 ring-offset-2" : "border-neutral-300"
-                }`}
+                className={sizeBtnCls(size === s)}
               >
                 <span
                   className="rounded-full bg-neutral-900"
@@ -185,18 +232,10 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
                 />
               </button>
             ))}
-            <button
-              type="button"
-              onClick={undo}
-              className="ml-auto rounded-lg border border-neutral-300 px-3 py-1.5 text-sm"
-            >
+            <button type="button" onClick={undo} className={`${actionBtnCls} ml-auto`}>
               Angre
             </button>
-            <button
-              type="button"
-              onClick={clearAll}
-              className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm"
-            >
+            <button type="button" onClick={clearAll} className={actionBtnCls}>
               Tøm
             </button>
           </div>
