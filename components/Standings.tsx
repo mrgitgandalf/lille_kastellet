@@ -12,6 +12,16 @@ export function Standings({ standings, highlightLeader }: Props) {
     return <p className="text-sm text-neutral-500">Ingen poeng ennå.</p>;
   }
   const max = standings[0]?.score ?? 0;
+  // Standardranking: like poeng → samme plassering, neste hopper over.
+  // Eksempel: 8p,8p,5p → 1,1,3
+  const ranks: number[] = [];
+  for (let i = 0; i < standings.length; i++) {
+    if (i === 0 || standings[i].score !== standings[i - 1].score) {
+      ranks.push(i + 1);
+    } else {
+      ranks.push(ranks[i - 1]);
+    }
+  }
   return (
     <ol className="flex flex-col gap-1.5">
       {standings.map((s, i) => {
@@ -26,7 +36,7 @@ export function Standings({ standings, highlightLeader }: Props) {
             }`}
           >
             <span className="flex items-center gap-2">
-              <span className="text-neutral-400">{i + 1}.</span>
+              <span className="text-neutral-400">{ranks[i]}.</span>
               <span>{s.name}</span>
               {isLeader && <span>👑</span>}
             </span>

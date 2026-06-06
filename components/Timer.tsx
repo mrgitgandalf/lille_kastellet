@@ -6,10 +6,12 @@ export default function Timer({
   startedAt,
   durationSeconds,
   onExpire,
+  tone = "light",
 }: {
   startedAt: number;
   durationSeconds: number;
   onExpire?: () => void;
+  tone?: "light" | "dark";
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -33,13 +35,18 @@ export default function Timer({
   const ss = (remaining % 60).toString().padStart(2, "0");
   const isLow = remaining <= 10;
 
+  const colorClass =
+    tone === "dark"
+      ? isLow
+        ? "text-red-400"
+        : "text-yellow-300"
+      : isLow
+      ? "text-red-600"
+      : "text-neutral-700";
+
   return (
-    <span
-      className={`tabular-nums font-mono text-lg ${
-        isLow ? "text-red-600" : "text-neutral-700"
-      }`}
-    >
-      {mm}:{ss}
+    <span className={`tabular-nums font-mono text-2xl font-bold ${colorClass}`}>
+      ⏱ {mm}:{ss}
     </span>
   );
 }

@@ -9,6 +9,8 @@ import { Standings } from "@/components/Standings";
 import { FinalReveal } from "@/components/FinalReveal";
 import { Confetti } from "@/components/Confetti";
 import Timer from "@/components/Timer";
+import { PraiseBanner } from "@/components/PraiseBanner";
+import { randomPraise } from "@/lib/praise";
 import {
   getActiveTurn,
   getAllTurns,
@@ -56,6 +58,7 @@ export default function PlayerTurnClient({
   const [guess, setGuess] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [confettiTick, setConfettiTick] = useState(0);
+  const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
@@ -110,12 +113,18 @@ export default function PlayerTurnClient({
       setTurns(await getAllTurns(room.id));
       if (t) setGuesses(await getGuessesForTurn(t.id));
     });
-    channel.subscribe("guess.posted", (msg) => {
+    channel.subscribe("guess.posted", async (msg) => {
       const data = msg.data as GjetteGuess;
       setGuesses((prev) =>
         prev.some((g) => g.id === data.id) ? prev : [...prev, data],
       );
-      if (data.is_correct) setConfettiTick((t) => t + 1);
+      if (data.is_correct) {
+        setConfettiTick((t) => t + 1);
+        const player =
+          (await getPlayers(room.id)).find((p) => p.id === data.player_id) ??
+          null;
+        setPraiseMessage(randomPraise(player?.name ?? "Spiller"));
+      }
     });
     channel.subscribe("game.finished", async () => {
       setStandings(await getStandings(room.id));
@@ -194,11 +203,16 @@ export default function PlayerTurnClient({
 
   // Mellomstilling — ingen aktiv tur, men spillet er fortsatt 'playing'
   if (!activeTurn) {
+    const allDone =
+      totalTurns > 0 && turns.every((t) => t.state === "finished");
     return (
       <main className="flex flex-col gap-5">
         <Confetti trigger={confettiTick} />
+        <PraiseBanner message={praiseMessage} />
         <header className="rounded-2xl bg-neutral-900 px-4 py-3 text-center text-white">
-          <p className="text-xs uppercase tracking-wide text-neutral-400">Pause</p>
+          <p className="text-xs uppercase tracking-wide text-neutral-400">
+            {allDone ? "Spillet er slutt" : "Pause"}
+          </p>
           <p className="text-lg font-semibold">
             {remaining} ord igjen ({finishedCount}/{totalTurns})
           </p>
@@ -210,7 +224,9 @@ export default function PlayerTurnClient({
           <Standings standings={standings} />
         </section>
         <p className="text-center text-sm text-neutral-500">
-          Venter på neste runde …
+          {allDone
+            ? "Venter på at verten viser sluttresultatet …"
+            : "Venter på neste runde …"}
         </p>
       </main>
     );
@@ -219,6 +235,7 @@ export default function PlayerTurnClient({
   return (
     <main className="flex flex-col gap-4">
       <Confetti trigger={confettiTick} />
+      <PraiseBanner message={praiseMessage} />
 
       <header className="flex items-center justify-between rounded-2xl bg-neutral-900 px-4 py-3 text-white">
         <div>
@@ -242,6 +259,7 @@ export default function PlayerTurnClient({
               <Timer
                 startedAt={Date.parse(activeTurn.started_at)}
                 durationSeconds={room.round_seconds}
+                tone="dark"
               />
             </div>
           )}

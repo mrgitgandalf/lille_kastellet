@@ -9,6 +9,8 @@ import { DrawingCanvas, type Stroke } from "@/components/DrawingCanvas";
 import { GuessFeed } from "@/components/GuessFeed";
 import { Standings } from "@/components/Standings";
 import { FinalReveal } from "@/components/FinalReveal";
+import { PraiseBanner } from "@/components/PraiseBanner";
+import { randomPraise } from "@/lib/praise";
 import {
   deleteRoom,
   endGame,
@@ -66,6 +68,8 @@ export default function HostRoomClient({
   );
   const [hostToken, setHostToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [wordHidden, setWordHidden] = useState(false);
+  const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
@@ -96,6 +100,7 @@ export default function HostRoomClient({
       setStandings(await getStandings(room.id));
       setExternalStrokes([]);
       setGuesses(t ? await getGuessesForTurn(t.id) : []);
+      setWordHidden(false);
     };
 
     channel.subscribe("room.updated", refreshRoom);
@@ -113,6 +118,12 @@ export default function HostRoomClient({
       setGuesses((prev) =>
         prev.some((g) => g.id === data.id) ? prev : [...prev, data],
       );
+      if (data.is_correct) {
+        const player =
+          (await getPlayers(room.id)).find((p) => p.id === data.player_id) ??
+          null;
+        setPraiseMessage(randomPraise(player?.name ?? "Spiller"));
+      }
     });
     channel.subscribe("game.finished", async () => {
       setStandings(await getStandings(room.id));
@@ -360,19 +371,33 @@ export default function HostRoomClient({
           <div className="text-right">
             <p className="text-xs uppercase tracking-wide text-neutral-400">Tegner</p>
             <p className="text-lg font-semibold">{drawer.name}</p>
-            <p className="text-sm text-yellow-300">Ord: {activeTurn.word}</p>
+            <div className="flex items-center justify-end gap-2">
+              <p className="text-sm text-yellow-300">
+                Ord: {wordHidden ? "●●●●●" : activeTurn.word}
+              </p>
+              <button
+                type="button"
+                onClick={() => setWordHidden((v) => !v)}
+                className="rounded-md border border-neutral-600 px-2 py-0.5 text-xs text-neutral-300 hover:bg-neutral-800"
+                title={wordHidden ? "Vis ordet" : "Skjul ordet"}
+              >
+                {wordHidden ? "Vis" : "Skjul"}
+              </button>
+            </div>
             {room.round_seconds > 0 && turnStartMs && (
               <div className="mt-1">
                 <Timer
                   startedAt={turnStartMs}
                   durationSeconds={room.round_seconds}
                   onExpire={handleTimerExpire}
+                  tone="dark"
                 />
               </div>
             )}
           </div>
         )}
       </header>
+      <PraiseBanner message={praiseMessage} />
 
       {activeTurn && (
         <DrawingCanvas
