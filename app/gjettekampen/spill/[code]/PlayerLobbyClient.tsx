@@ -91,15 +91,15 @@ export default function PlayerLobbyClient({
       <main className="flex flex-col gap-4">
         <header className="text-center">
           <p className="text-4xl">🚪</p>
-          <h1 className="mt-2 text-3xl font-black text-rose-800">
+          <h1 className="mt-2 text-3xl font-black text-pink-700">
             Bli med i rom {room.code}
           </h1>
         </header>
         <form
           onSubmit={doJoin}
-          className="flex flex-col gap-3 rounded-3xl border-2 border-amber-200 bg-white/80 p-6 shadow-xl backdrop-blur"
+          className="flex flex-col gap-3 rounded-3xl border-2 border-neutral-300 bg-white/80 p-6 shadow-xl backdrop-blur"
         >
-          <label className="text-sm font-bold text-amber-900" htmlFor="name">
+          <label className="text-sm font-bold text-neutral-800" htmlFor="name">
             Navnet ditt
           </label>
           <input
@@ -109,13 +109,13 @@ export default function PlayerLobbyClient({
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={40}
-            className="rounded-xl border-2 border-amber-200 bg-white px-4 py-3 text-lg focus:border-amber-500 focus:outline-none"
+            className="rounded-xl border-2 border-neutral-300 bg-white px-4 py-3 text-lg focus:border-neutral-500 focus:outline-none"
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={pending}
-            className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-3 font-bold text-white shadow-md transition hover:from-orange-600 hover:to-rose-600 disabled:opacity-50"
+            className="rounded-xl bg-neutral-900 px-4 py-3 font-bold text-white shadow-md transition hover:bg-neutral-800 disabled:opacity-50"
           >
             {pending ? "Blir med..." : "Bli med 🚀"}
           </button>
@@ -128,7 +128,7 @@ export default function PlayerLobbyClient({
     <main className="flex flex-col gap-6 text-center">
       <header>
         <p className="text-5xl">👋</p>
-        <h1 className="mt-2 text-4xl font-black text-rose-800">
+        <h1 className="mt-2 text-4xl font-black text-pink-700">
           Hei, {myPlayer.name}!
         </h1>
       </header>
@@ -136,8 +136,8 @@ export default function PlayerLobbyClient({
         Venter på at vert starter spillet. Hold telefonen klar – du kommer
         kanskje til å tegne! ✏️
       </p>
-      <section className="rounded-3xl border-2 border-amber-200 bg-white/80 p-5 shadow-xl backdrop-blur">
-        <h2 className="mb-3 font-bold text-amber-900">
+      <section className="rounded-3xl border-2 border-neutral-300 bg-white/80 p-5 shadow-xl backdrop-blur">
+        <h2 className="mb-3 font-bold text-neutral-800">
           Spillere i rommet ({players.length})
         </h2>
         <ul className="flex flex-wrap justify-center gap-2">
@@ -146,8 +146,8 @@ export default function PlayerLobbyClient({
               key={p.id}
               className={`rounded-full px-4 py-1.5 text-sm font-semibold ${
                 p.id === myPlayer.id
-                  ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow"
-                  : "bg-amber-100 text-amber-900"
+                  ? "bg-neutral-900 text-white shadow"
+                  : "bg-pink-100 text-neutral-800"
               }`}
             >
               {p.name}

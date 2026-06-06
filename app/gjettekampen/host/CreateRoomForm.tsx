@@ -103,7 +103,7 @@ export default function CreateRoomForm() {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-3 font-bold text-white shadow-md transition hover:from-orange-600 hover:to-rose-600 disabled:opacity-50"
+        className="rounded-xl bg-neutral-900 px-4 py-3 font-bold text-white shadow-md ring-2 ring-pink-400/40 transition hover:bg-neutral-800 hover:ring-pink-400 disabled:opacity-50"
       >
         {pending ? "Oppretter..." : "Opprett rom →"}
       </button>

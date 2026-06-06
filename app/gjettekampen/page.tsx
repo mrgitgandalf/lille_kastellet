@@ -6,7 +6,7 @@ export default function GjettekampenLanding() {
     <main className="flex flex-col gap-8">
       <header className="text-center">
         <p className="text-5xl">🎨 ✏️ 🎯</p>
-        <h1 className="mt-3 bg-gradient-to-br from-orange-600 to-rose-600 bg-clip-text text-5xl font-black tracking-tight text-transparent">
+        <h1 className="mt-3 bg-gradient-to-br from-pink-600 to-fuchsia-700 bg-clip-text text-5xl font-black tracking-tight text-transparent">
           Gjettekampen
         </h1>
         <p className="mt-3 text-neutral-700">
@@ -15,15 +15,15 @@ export default function GjettekampenLanding() {
         </p>
       </header>
 
-      <section className="rounded-3xl border-2 border-amber-200 bg-white/80 p-6 shadow-xl backdrop-blur">
-        <h2 className="mb-3 text-xl font-bold text-amber-900">
+      <section className="rounded-3xl border-2 border-pink-200 bg-white/80 p-6 shadow-xl backdrop-blur">
+        <h2 className="mb-3 text-xl font-bold text-pink-700">
           🕹️ Bli med i spill
         </h2>
         <JoinForm />
       </section>
 
-      <section className="rounded-3xl border-2 border-rose-200 bg-white/80 p-6 shadow-xl backdrop-blur">
-        <h2 className="mb-3 text-xl font-bold text-rose-900">
+      <section className="rounded-3xl border-2 border-pink-200 bg-white/80 p-6 shadow-xl backdrop-blur">
+        <h2 className="mb-3 text-xl font-bold text-pink-700">
           🎬 Start et nytt spill
         </h2>
         <p className="mb-4 text-sm text-neutral-700">
@@ -32,7 +32,7 @@ export default function GjettekampenLanding() {
         </p>
         <Link
           href="/gjettekampen/host"
-          className="inline-block rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-6 py-3 font-bold text-white shadow-md transition hover:from-orange-600 hover:to-rose-600"
+          className="inline-block rounded-xl bg-neutral-900 px-6 py-3 font-bold text-white shadow-md ring-2 ring-pink-400/40 transition hover:bg-neutral-800 hover:ring-pink-400"
         >
           Opprett rom →
         </Link>

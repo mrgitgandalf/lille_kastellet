@@ -216,16 +216,16 @@ export default function PlayerTurnClient({
         <Confetti trigger={confettiTick} />
         <PraiseBanner message={praiseMessage} />
         <PraiseBanner message={timeoutMessage} variant="timeout" />
-        <header className="rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-center text-white shadow-xl ring-2 ring-amber-400/30">
-          <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
+        <header className="rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-center text-white shadow-xl ring-2 ring-pink-400/40">
+          <p className="text-xs font-bold uppercase tracking-wide text-pink-300">
             {allDone ? "🏁 Spillet er slutt" : "⏸️ Pause"}
           </p>
           <p className="text-xl font-black">
             {remaining} ord igjen ({finishedCount}/{totalTurns})
           </p>
         </header>
-        <section className="rounded-3xl border-2 border-rose-200 bg-white/80 p-4 shadow-xl backdrop-blur">
-          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-rose-900">
+        <section className="rounded-3xl border-2 border-pink-200 bg-white/80 p-4 shadow-xl backdrop-blur">
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-pink-700">
             🏆 Stilling
           </h2>
           <Standings standings={standings} />
@@ -245,9 +245,9 @@ export default function PlayerTurnClient({
       <PraiseBanner message={praiseMessage} />
       <PraiseBanner message={timeoutMessage} variant="timeout" />
 
-      <header className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-white shadow-xl ring-2 ring-amber-400/30">
+      <header className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-white shadow-xl ring-2 ring-pink-400/40">
         <div>
-          <p className="text-xs uppercase tracking-wide text-amber-300">
+          <p className="text-xs uppercase tracking-wide text-pink-300">
             {remaining} ord igjen
           </p>
           <p className="text-xl font-black">
@@ -255,7 +255,7 @@ export default function PlayerTurnClient({
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xs uppercase tracking-wide text-amber-300">
+          <p className="text-xs uppercase tracking-wide text-pink-300">
             {isDrawer ? "✏️ Du tegner" : "✏️ Tegner"}
           </p>
           <p className="text-xl font-black">{drawer?.name ?? "?"}</p>
@@ -301,13 +301,13 @@ export default function PlayerTurnClient({
               onChange={(e) => setGuess(e.target.value)}
               maxLength={200}
               placeholder="Skriv gjetning…"
-              className="flex-1 rounded-xl border-2 border-amber-200 bg-white px-3 py-3 text-base focus:border-amber-500 focus:outline-none"
+              className="flex-1 rounded-xl border-2 border-neutral-300 bg-white px-3 py-3 text-base focus:border-neutral-500 focus:outline-none"
               autoFocus
             />
             <button
               type="submit"
               disabled={pending || guess.trim().length === 0}
-              className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-3 font-bold text-white shadow-md transition hover:from-orange-600 hover:to-rose-600 disabled:opacity-50"
+              className="rounded-xl bg-neutral-900 px-5 py-3 font-bold text-white shadow-md transition hover:bg-neutral-800 disabled:opacity-50"
             >
               Send 🎯
             </button>
@@ -317,15 +317,15 @@ export default function PlayerTurnClient({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <section className="rounded-3xl border-2 border-amber-200 bg-white/80 p-4 shadow-xl backdrop-blur">
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-amber-900">
+      <section className="rounded-3xl border-2 border-neutral-300 bg-white/80 p-4 shadow-xl backdrop-blur">
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-neutral-800">
           💬 Gjetninger
         </h2>
         <GuessFeed guesses={guesses} players={players} />
       </section>
 
-      <section className="rounded-3xl border-2 border-rose-200 bg-white/80 p-4 shadow-xl backdrop-blur">
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-rose-900">
+      <section className="rounded-3xl border-2 border-pink-200 bg-white/80 p-4 shadow-xl backdrop-blur">
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-pink-700">
           🏆 Stilling
         </h2>
         <Standings standings={standings} />

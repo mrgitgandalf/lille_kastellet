@@ -5,7 +5,7 @@ export default function HostNewRoomPage() {
     <main className="flex flex-col gap-6">
       <header>
         <p className="text-4xl">🎬</p>
-        <h1 className="mt-2 bg-gradient-to-br from-orange-600 to-rose-600 bg-clip-text text-4xl font-black text-transparent">
+        <h1 className="mt-2 bg-gradient-to-br from-pink-600 to-fuchsia-700 bg-clip-text text-4xl font-black text-transparent">
           Opprett rom
         </h1>
         <p className="mt-2 text-neutral-700">
@@ -13,7 +13,7 @@ export default function HostNewRoomPage() {
           spillerne har joinet.
         </p>
       </header>
-      <div className="rounded-3xl border-2 border-amber-200 bg-white/80 p-6 shadow-xl backdrop-blur">
+      <div className="rounded-3xl border-2 border-pink-200 bg-white/80 p-6 shadow-xl backdrop-blur">
         <CreateRoomForm />
       </div>
     </main>
