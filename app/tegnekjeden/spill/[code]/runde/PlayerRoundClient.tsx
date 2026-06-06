@@ -53,14 +53,12 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
     setSubmitted(false);
     setTextInput("");
     setError(null);
+    setPreviousContent(null); // Nullstill synkront for å unngå flash av forrige runde
     startedAtRef.current = Date.now();
     canvasRef.current?.clear();
 
     if (!clientToken || !room.pages_per_book) return;
-    if (room.current_round === 0) {
-      setPreviousContent(null);
-      return;
-    }
+    if (room.current_round === 0) return;
     (async () => {
       const prev = await getPreviousPageForPlayer({ clientToken });
       setPreviousContent(prev);
@@ -188,7 +186,7 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
           className="rounded-xl border-4 border-rose-700/40 bg-[#fdf5e0] px-3 py-2 font-mono text-base font-semibold text-rose-900 focus:border-rose-700 focus:outline-none"
         />
       ) : (
-        <DrawingCanvas ref={canvasRef} theme="retro" />
+        <DrawingCanvas key={round} ref={canvasRef} theme="retro" />
       )}
 
       {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
