@@ -9,8 +9,14 @@ export default function CreateRoomForm() {
   const [roundSeconds, setRoundSeconds] = useState(180);
   const [guessPoints, setGuessPoints] = useState(1);
   const [drawerPoints, setDrawerPoints] = useState(3);
+  const [wordsText, setWordsText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const liveWordCount = wordsText
+    .split("\n")
+    .map((w) => w.trim())
+    .filter((w) => w.length > 0).length;
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,6 +27,7 @@ export default function CreateRoomForm() {
           roundSeconds,
           guessPoints,
           drawerPoints,
+          wordsText,
         });
         if (typeof window !== "undefined") {
           localStorage.setItem(`host_token:${code}`, hostToken);
@@ -106,6 +113,24 @@ export default function CreateRoomForm() {
         </label>
         <span className="text-xs font-semibold text-emerald-800/70">
           Standard: 1p til gjetter, 3p til tegner. Sett til 0 for å skru av.
+        </span>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-3 rounded-xl border-4 border-rose-700/40 bg-rose-50 p-4 shadow-[3px_3px_0_0_rgba(0,0,0,0.12)]">
+        <legend className="px-2 text-xs font-black uppercase tracking-wide text-rose-900">
+          📝 Ord ({liveWordCount}) — én per linje
+        </legend>
+        <textarea
+          value={wordsText}
+          onChange={(e) => setWordsText(e.target.value)}
+          rows={8}
+          placeholder={"sykkel\nflyplass\nelefant\n…"}
+          className="w-full rounded-xl border-4 border-rose-700/40 bg-[#fdf5e0] px-3 py-2 font-mono text-sm font-semibold text-rose-900 focus:border-rose-700 focus:outline-none"
+        />
+        <span className="text-xs font-semibold text-rose-900/70">
+          Valgfritt nå — du kan også legge inn / endre ord på rom-siden
+          etterpå. Trenger minst like mange ord som spillere før spillet kan
+          starte.
         </span>
       </fieldset>
 

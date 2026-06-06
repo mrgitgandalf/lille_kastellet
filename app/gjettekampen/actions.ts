@@ -25,14 +25,21 @@ const createRoomSchema = z.object({
   ),
   guessPoints: z.coerce.number().int().min(0).max(20),
   drawerPoints: z.coerce.number().int().min(0).max(20),
+  wordsText: z.string().max(20_000).optional().default(""),
 });
 
 export async function createRoom(input: {
   roundSeconds: number;
   guessPoints: number;
   drawerPoints: number;
+  wordsText?: string;
 }): Promise<{ code: string; hostToken: string }> {
   const parsed = createRoomSchema.parse(input);
+  const words = parsed.wordsText
+    .split("\n")
+    .map((w) => w.trim())
+    .filter((w) => w.length > 0 && w.length <= 100);
+
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = generateRoomCode();
     try {
@@ -45,9 +52,18 @@ export async function createRoom(input: {
           ${code}, 'gjettekampen', 'player_prompts', ${parsed.roundSeconds},
           ${parsed.guessPoints}, ${parsed.drawerPoints}
         )
-        returning code, host_token
-      `) as { code: string; host_token: string }[];
-      if (rows[0]) return { code: rows[0].code, hostToken: rows[0].host_token };
+        returning id, code, host_token
+      `) as { id: string; code: string; host_token: string }[];
+      if (rows[0]) {
+        const roomId = rows[0].id;
+        for (let i = 0; i < words.length; i++) {
+          await sql`
+            insert into gjette_words (room_id, word, word_order)
+            values (${roomId}, ${words[i]}, ${i})
+          `;
+        }
+        return { code: rows[0].code, hostToken: rows[0].host_token };
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (!msg.includes("duplicate") && !msg.includes("unique")) throw err;
