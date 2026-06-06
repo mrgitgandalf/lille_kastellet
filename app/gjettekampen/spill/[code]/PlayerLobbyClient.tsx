@@ -90,16 +90,19 @@ export default function PlayerLobbyClient({
     return (
       <main className="flex flex-col gap-4">
         <header className="text-center">
-          <p className="text-4xl">🚪</p>
-          <h1 className="mt-2 text-3xl font-black text-pink-700">
-            Bli med i rom {room.code}
+          <p className="text-5xl">🚪</p>
+          <h1 className="mt-3 text-4xl font-black uppercase tracking-tight text-violet-200 [text-shadow:_3px_3px_0_#5b21b6,_-2px_-2px_0_#5b21b6,_2px_-2px_0_#5b21b6,_-2px_2px_0_#5b21b6,_2px_2px_0_#5b21b6]">
+            Rom {room.code}
           </h1>
         </header>
         <form
           onSubmit={doJoin}
-          className="flex flex-col gap-3 rounded-3xl border-2 border-neutral-300 bg-white/80 p-6 shadow-xl backdrop-blur"
+          className="flex flex-col gap-3 rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-6 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]"
         >
-          <label className="text-sm font-bold text-neutral-800" htmlFor="name">
+          <label
+            className="text-sm font-black uppercase tracking-wide text-sky-900"
+            htmlFor="name"
+          >
             Navnet ditt
           </label>
           <input
@@ -109,13 +112,15 @@ export default function PlayerLobbyClient({
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={40}
-            className="rounded-xl border-2 border-neutral-300 bg-white px-4 py-3 text-lg focus:border-neutral-500 focus:outline-none"
+            className="rounded-xl border-4 border-sky-700/40 bg-[#fdf5e0] px-4 py-3 text-lg font-bold text-sky-900 focus:border-sky-700 focus:outline-none"
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="text-sm font-semibold text-red-700">{error}</p>
+          )}
           <button
             type="submit"
             disabled={pending}
-            className="rounded-xl bg-neutral-900 px-4 py-3 font-bold text-white shadow-md transition hover:bg-neutral-800 disabled:opacity-50"
+            className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
           >
             {pending ? "Blir med..." : "Bli med 🚀"}
           </button>
@@ -127,27 +132,27 @@ export default function PlayerLobbyClient({
   return (
     <main className="flex flex-col gap-6 text-center">
       <header>
-        <p className="text-5xl">👋</p>
-        <h1 className="mt-2 text-4xl font-black text-pink-700">
+        <p className="text-6xl">👋</p>
+        <h1 className="mt-3 text-4xl font-black uppercase tracking-tight text-emerald-200 [text-shadow:_3px_3px_0_#065f46,_-2px_-2px_0_#065f46,_2px_-2px_0_#065f46,_-2px_2px_0_#065f46,_2px_2px_0_#065f46]">
           Hei, {myPlayer.name}!
         </h1>
       </header>
-      <p className="text-neutral-700">
+      <p className="font-semibold text-stone-700">
         Venter på at vert starter spillet. Hold telefonen klar – du kommer
         kanskje til å tegne! ✏️
       </p>
-      <section className="rounded-3xl border-2 border-neutral-300 bg-white/80 p-5 shadow-xl backdrop-blur">
-        <h2 className="mb-3 font-bold text-neutral-800">
+      <section className="rounded-2xl border-4 border-emerald-700/40 bg-emerald-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+        <h2 className="mb-3 font-black uppercase tracking-wide text-emerald-900">
           Spillere i rommet ({players.length})
         </h2>
         <ul className="flex flex-wrap justify-center gap-2">
           {players.map((p) => (
             <li
               key={p.id}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold ${
+              className={`rounded-lg border-2 px-4 py-1.5 text-sm font-bold ${
                 p.id === myPlayer.id
-                  ? "bg-neutral-900 text-white shadow"
-                  : "bg-pink-100 text-neutral-800"
+                  ? "border-violet-950 bg-violet-800 text-violet-50 shadow-[2px_2px_0_0_#0b0420]"
+                  : "border-emerald-800/40 bg-[#fdf5e0] text-emerald-900"
               }`}
             >
               {p.name}

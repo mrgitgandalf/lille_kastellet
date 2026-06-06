@@ -18,7 +18,7 @@ export default function GjettekampenLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-100 via-neutral-200 to-neutral-300">
+    <div className="min-h-screen bg-[#fdf5e0]">
       <div className="mx-auto w-full max-w-3xl px-4 py-6">{children}</div>
     </div>
   );

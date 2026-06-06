@@ -264,33 +264,35 @@ export default function HostRoomClient({
     return (
       <main className="flex flex-col gap-6">
         <header className="text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-neutral-600">
+          <p className="text-xs font-black uppercase tracking-widest text-violet-700">
             🎮 Romkode
           </p>
-          <p className="bg-gradient-to-br bg-neutral-800 bg-clip-text text-7xl font-black tracking-[0.2em] text-transparent">
+          <p className="mt-2 text-7xl font-black tracking-[0.2em] text-violet-200 [text-shadow:_4px_4px_0_#5b21b6,_-3px_-3px_0_#5b21b6,_3px_-3px_0_#5b21b6,_-3px_3px_0_#5b21b6,_3px_3px_0_#5b21b6]">
             {room.code}
           </p>
         </header>
 
-        <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-neutral-300 bg-white/80 p-5 shadow-xl backdrop-blur">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
           {joinUrl && <RoomQRCode url={joinUrl} />}
-          <p className="text-sm text-neutral-700">
+          <p className="text-sm font-semibold text-sky-900">
             Scan eller gå til <strong>{joinUrl}</strong>
           </p>
         </div>
 
-        <section className="rounded-3xl border-2 border-neutral-300 bg-white/80 p-5 shadow-xl backdrop-blur">
-          <h2 className="mb-3 font-bold text-neutral-800">
+        <section className="rounded-2xl border-4 border-emerald-700/40 bg-emerald-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+          <h2 className="mb-3 font-black uppercase tracking-wide text-emerald-900">
             🙋 Spillere ({players.length})
           </h2>
           {players.length === 0 ? (
-            <p className="text-sm text-neutral-500">Venter på spillere…</p>
+            <p className="text-sm font-semibold text-emerald-800/70">
+              Venter på spillere…
+            </p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               {players.map((p) => (
                 <li
                   key={p.id}
-                  className="rounded-full bg-pink-100 px-4 py-1.5 text-sm font-semibold text-neutral-800"
+                  className="rounded-lg border-2 border-emerald-800/40 bg-[#fdf5e0] px-4 py-1.5 text-sm font-bold text-emerald-900"
                 >
                   {p.name}
                 </li>
@@ -299,8 +301,8 @@ export default function HostRoomClient({
           )}
         </section>
 
-        <section className="rounded-3xl border-2 border-pink-200 bg-white/80 p-5 shadow-xl backdrop-blur">
-          <h2 className="mb-3 font-bold text-pink-700">
+        <section className="rounded-2xl border-4 border-rose-700/40 bg-rose-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+          <h2 className="mb-3 font-black uppercase tracking-wide text-rose-900">
             📝 Ord ({liveWordCount}) — én per linje
           </h2>
           <textarea
@@ -309,9 +311,9 @@ export default function HostRoomClient({
             onBlur={doSetWords}
             rows={8}
             placeholder={"sykkel\nflyplass\nelefant\n..."}
-            className="w-full rounded-xl border-2 border-pink-200 bg-white px-3 py-2 font-mono text-sm focus:border-pink-500 focus:outline-none"
+            className="w-full rounded-xl border-4 border-rose-700/40 bg-[#fdf5e0] px-3 py-2 font-mono text-sm font-semibold text-rose-900 focus:border-rose-700 focus:outline-none"
           />
-          <p className="mt-2 text-xs text-neutral-600">
+          <p className="mt-2 text-xs font-semibold text-rose-900/80">
             {players.length >= 2 && liveWordCount >= players.length
               ? `Spillet bruker ${
                   Math.floor(liveWordCount / players.length) * players.length
@@ -324,7 +326,7 @@ export default function HostRoomClient({
           </p>
         </section>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
 
         <button
           type="button"
@@ -332,7 +334,7 @@ export default function HostRoomClient({
           disabled={
             pending || players.length < 2 || liveWordCount < players.length
           }
-          className="rounded-xl bg-neutral-900 px-4 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-neutral-800 disabled:bg-neutral-400 disabled:from-neutral-400 disabled:to-neutral-400"
+          className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-4 text-lg font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:border-stone-700 disabled:bg-stone-500"
         >
           {players.length < 2
             ? `Minst 2 spillere må joine (${players.length}/2)`
@@ -378,27 +380,29 @@ export default function HostRoomClient({
 
   return (
     <main className="flex flex-col gap-5">
-      <header className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-white shadow-xl ring-2 ring-pink-400/40">
+      <header className="flex items-center justify-between rounded-2xl border-4 border-violet-950 bg-violet-900 px-5 py-4 text-violet-50 shadow-[6px_6px_0_0_#0b0420]">
         <div>
-          <p className="text-xs uppercase tracking-wide text-pink-300">
-            🎙️ Vert-visning · Rom {room.code}
+          <p className="text-xs font-black uppercase tracking-wide text-amber-300">
+            🎙️ Vert · Rom {room.code}
           </p>
-          <p className="text-2xl font-black">
+          <p className="text-2xl font-black uppercase">
             {remaining} ord igjen ({finishedCount}/{totalTurns})
           </p>
         </div>
         {activeTurn && drawer && (
           <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-neutral-400">Tegner</p>
-            <p className="text-lg font-semibold">{drawer.name}</p>
+            <p className="text-xs font-black uppercase tracking-wide text-amber-300">
+              Tegner
+            </p>
+            <p className="text-xl font-black uppercase">{drawer.name}</p>
             <div className="flex items-center justify-end gap-2">
-              <p className="text-sm text-yellow-300">
+              <p className="text-sm font-bold text-amber-200">
                 Ord: {wordHidden ? "●●●●●" : activeTurn.word}
               </p>
               <button
                 type="button"
                 onClick={() => setWordHidden((v) => !v)}
-                className="rounded-md border border-neutral-600 px-2 py-0.5 text-xs text-neutral-300 hover:bg-neutral-800"
+                className="rounded-md border-2 border-violet-300/50 px-2 py-0.5 text-xs font-bold uppercase text-violet-100 hover:bg-violet-800"
                 title={wordHidden ? "Vis ordet" : "Skjul ordet"}
               >
                 {wordHidden ? "Vis" : "Skjul"}
@@ -428,28 +432,28 @@ export default function HostRoomClient({
         />
       )}
 
-      <section className="rounded-3xl border-2 border-neutral-300 bg-white/80 p-4 shadow-xl backdrop-blur">
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-neutral-800">
+      <section className="rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+        <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-sky-900">
           💬 Gjetninger
         </h2>
         <GuessFeed guesses={guesses} players={players} />
       </section>
 
-      <section className="rounded-3xl border-2 border-pink-200 bg-white/80 p-4 shadow-xl backdrop-blur">
-        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-pink-700">
+      <section className="rounded-2xl border-4 border-rose-700/40 bg-rose-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+        <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-rose-900">
           🏆 Stilling
         </h2>
         <Standings standings={standings} />
       </section>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
 
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={doNext}
           disabled={pending}
-          className="flex-1 rounded-xl bg-neutral-900 px-4 py-3 font-bold text-white shadow-lg transition hover:bg-neutral-800 disabled:opacity-50"
+          className="flex-1 rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
         >
           {remaining === 0
             ? "Avslutt og vis resultat 🏁"
@@ -462,7 +466,7 @@ export default function HostRoomClient({
             type="button"
             onClick={doSkip}
             disabled={pending}
-            className="rounded-xl border-2 border-neutral-400 bg-white px-4 py-3 text-sm font-semibold text-neutral-800 hover:bg-pink-50"
+            className="rounded-xl border-4 border-rose-900 bg-rose-200 px-4 py-3 text-sm font-black uppercase text-rose-900 shadow-[3px_3px_0_0_#881337] hover:bg-rose-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_#881337]"
           >
             Hopp over
           </button>
