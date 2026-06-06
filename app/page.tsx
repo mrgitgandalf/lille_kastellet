@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -22,6 +23,15 @@ export default function Home() {
           Foto tilgjengeliggjort av Bekkelagshøgda lokalhistorisk forening (v/ Dag Jarnøy)
         </figcaption>
       </figure>
+      <footer className="mt-8 text-[11px] text-neutral-400">
+        <Link href="/tegnekjeden" className="hover:text-neutral-600">
+          tegnekjeden
+        </Link>
+        <span className="mx-2">·</span>
+        <Link href="/gjettekampen" className="hover:text-neutral-600">
+          gjettekampen
+        </Link>
+      </footer>
     </main>
   );
 }
