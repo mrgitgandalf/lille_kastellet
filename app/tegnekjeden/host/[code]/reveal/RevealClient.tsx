@@ -114,32 +114,34 @@ export default function RevealClient({
 
   return (
     <main className="flex min-h-[80vh] flex-col gap-4">
-      <header className="flex items-center justify-between">
-        <p className="text-sm text-neutral-500">
-          Bok {bookIdx + 1} av {sortedBooks.length} – {owner?.name ?? "?"}
+      <header className="flex items-center justify-between rounded-2xl border-4 border-violet-950 bg-violet-900 px-5 py-3 text-violet-50 shadow-[6px_6px_0_0_#0b0420]">
+        <p className="text-xs font-black uppercase tracking-wide text-amber-300 sm:text-sm">
+          📖 Bok {bookIdx + 1}/{sortedBooks.length} · {owner?.name ?? "?"}
         </p>
-        <p className="text-sm text-neutral-500">
-          Side {pageIdx + 1} av {totalPages}
+        <p className="text-xs font-black uppercase tracking-wide text-amber-300 sm:text-sm">
+          Side {pageIdx + 1}/{totalPages}
         </p>
       </header>
 
-      <section className="flex h-[68vh] flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <section className="flex h-[68vh] flex-col items-center justify-center rounded-2xl border-4 border-rose-700/40 bg-rose-50 p-6 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
         {currentPage ? (
           currentPage.kind === "text" ? (
-            <p className="max-w-3xl text-center text-3xl font-medium">
+            <p className="max-w-3xl text-center text-3xl font-bold text-rose-900">
               {currentPage.content}
             </p>
           ) : (
             <img
               src={currentPage.content}
               alt="Tegning"
-              className="max-h-[55vh] w-auto rounded-lg"
+              className="max-h-[55vh] w-auto rounded-lg border-4 border-rose-700/40"
             />
           )
         ) : (
-          <p className="text-neutral-500">Tom side</p>
+          <p className="font-semibold text-rose-700/70">Tom side</p>
         )}
-        <p className="mt-4 text-sm text-neutral-500">av {authorName}</p>
+        <p className="mt-4 text-sm font-black uppercase tracking-wide text-rose-700">
+          av {authorName}
+        </p>
       </section>
 
       <div className="flex items-center justify-between gap-3">
@@ -147,12 +149,12 @@ export default function RevealClient({
           type="button"
           onClick={prev}
           disabled={bookIdx === 0 && pageIdx === 0}
-          className="rounded-lg border border-neutral-300 px-4 py-2 disabled:opacity-30"
+          className="rounded-xl border-4 border-stone-700 bg-stone-200 px-4 py-2 font-black uppercase tracking-wide text-stone-900 shadow-[3px_3px_0_0_#44403c] transition hover:bg-stone-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_#44403c] disabled:opacity-30"
         >
           ← Forrige
         </button>
-        <p className="text-xs text-neutral-500">
-          Bruk piltaster eller mellomrom for å bla
+        <p className="hidden text-xs font-semibold text-stone-600 sm:block">
+          Piltaster eller mellomrom blar
         </p>
         <button
           type="button"
@@ -160,7 +162,7 @@ export default function RevealClient({
           disabled={
             bookIdx === sortedBooks.length - 1 && pageIdx === totalPages - 1
           }
-          className="rounded-lg bg-neutral-900 px-4 py-2 text-white disabled:opacity-30"
+          className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-2 font-black uppercase tracking-wide text-violet-50 shadow-[3px_3px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_#0b0420] disabled:opacity-30"
         >
           Neste →
         </button>
@@ -170,7 +172,7 @@ export default function RevealClient({
         type="button"
         onClick={doDelete}
         disabled={pending}
-        className="mt-6 self-center text-sm text-red-600 underline"
+        className="mt-6 self-center text-sm font-semibold text-red-700 underline"
       >
         Avslutt og slett rom
       </button>

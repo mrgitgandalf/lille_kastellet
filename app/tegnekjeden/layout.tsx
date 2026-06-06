@@ -18,8 +18,8 @@ export default function TegnekjedenLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto min-h-screen w-full max-w-3xl px-4 py-6">
-      {children}
+    <div className="min-h-screen bg-[#fdf5e0]">
+      <div className="mx-auto w-full max-w-3xl px-4 py-6">{children}</div>
     </div>
   );
 }

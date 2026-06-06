@@ -77,7 +77,7 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
   if (!clientToken) {
     return (
       <main className="text-center">
-        <p>Laster spilleren din...</p>
+        <p className="font-semibold text-stone-700">Laster spilleren din…</p>
       </main>
     );
   }
@@ -85,8 +85,8 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
   if (!room.pages_per_book || room.state !== "playing") {
     return (
       <main className="text-center">
-        <h1 className="text-xl font-semibold">
-          Venter på at host starter neste...
+        <h1 className="text-xl font-black uppercase text-stone-800">
+          Venter på at host starter neste…
         </h1>
       </main>
     );
@@ -125,8 +125,11 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
   if (submitted) {
     return (
       <main className="flex flex-col items-center gap-4 text-center">
-        <h1 className="text-2xl font-semibold">Sendt inn! 🎉</h1>
-        <p className="text-neutral-600">
+        <p className="text-6xl">🎉</p>
+        <h1 className="text-3xl font-black uppercase tracking-tight text-emerald-200 sm:text-4xl [text-shadow:_3px_3px_0_#065f46,_-2px_-2px_0_#065f46,_2px_-2px_0_#065f46,_-2px_2px_0_#065f46,_2px_2px_0_#065f46]">
+          Sendt inn!
+        </h1>
+        <p className="font-semibold text-stone-700">
           Venter på de andre. Host starter neste runde.
         </p>
         {room.round_seconds > 0 && (
@@ -141,32 +144,35 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
 
   return (
     <main className="flex flex-col gap-4">
-      <header className="flex items-center justify-between">
-        <p className="text-sm text-neutral-500">
+      <header className="flex items-center justify-between rounded-2xl border-4 border-violet-950 bg-violet-900 px-5 py-4 text-violet-50 shadow-[6px_6px_0_0_#0b0420]">
+        <p className="text-base font-black uppercase tracking-wide">
           Runde {round + 1} av {room.pages_per_book}
         </p>
         {room.round_seconds > 0 && (
           <Timer
             startedAt={startedAtRef.current}
             durationSeconds={room.round_seconds}
+            tone="dark"
           />
         )}
       </header>
 
       {previousContent && (
-        <section className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+        <section className="rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+          <p className="mb-2 text-xs font-black uppercase tracking-wide text-sky-900">
             {previousContent.kind === "text"
               ? "Beskriv dette med en tegning:"
               : "Beskriv denne tegningen med ord:"}
           </p>
           {previousContent.kind === "text" ? (
-            <p className="text-lg">{previousContent.content}</p>
+            <p className="text-lg font-bold text-sky-900">
+              {previousContent.content}
+            </p>
           ) : (
             <img
               src={previousContent.content}
               alt="Forrige tegning"
-              className="w-full rounded-lg"
+              className="w-full rounded-lg border-4 border-sky-700/40"
             />
           )}
         </section>
@@ -178,22 +184,22 @@ export default function PlayerRoundClient({ initialRoom }: { initialRoom: Room }
           onChange={(e) => setTextInput(e.target.value)}
           rows={5}
           maxLength={300}
-          placeholder={round === 0 ? "Skriv din startsetning..." : "Beskriv tegningen..."}
-          className="rounded-lg border border-neutral-300 px-3 py-2 text-base"
+          placeholder={round === 0 ? "Skriv din startsetning…" : "Beskriv tegningen…"}
+          className="rounded-xl border-4 border-rose-700/40 bg-[#fdf5e0] px-3 py-2 font-mono text-base font-semibold text-rose-900 focus:border-rose-700 focus:outline-none"
         />
       ) : (
-        <DrawingCanvas ref={canvasRef} />
+        <DrawingCanvas ref={canvasRef} theme="retro" />
       )}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
 
       <button
         type="button"
         onClick={doSubmit}
         disabled={pending}
-        className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
+        className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
       >
-        {pending ? "Sender inn..." : "Send inn"}
+        {pending ? "Sender inn…" : "Send inn 🚀"}
       </button>
     </main>
   );

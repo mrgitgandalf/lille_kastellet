@@ -129,29 +129,37 @@ export default function HostRoomClient({
   return (
     <main className="flex flex-col gap-6">
       <header className="text-center">
-        <p className="text-sm uppercase tracking-widest text-neutral-500">Romkode</p>
-        <p className="text-6xl font-bold tracking-[0.3em]">{room.code}</p>
+        <p className="text-xs font-black uppercase tracking-widest text-violet-700">
+          🎮 Romkode
+        </p>
+        <p className="mt-2 text-5xl font-black tracking-[0.2em] text-violet-200 sm:text-7xl [text-shadow:_4px_4px_0_#5b21b6,_-3px_-3px_0_#5b21b6,_3px_-3px_0_#5b21b6,_-3px_3px_0_#5b21b6,_3px_3px_0_#5b21b6]">
+          {room.code}
+        </p>
       </header>
 
       {room.state === "lobby" && (
         <>
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3 rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
             {joinUrl && <RoomQRCode url={joinUrl} />}
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm font-semibold text-sky-900">
               Scan eller gå til <strong>{joinUrl}</strong>
             </p>
           </div>
 
-          <section className="rounded-2xl border border-neutral-200 p-4">
-            <h2 className="mb-2 font-semibold">Spillere ({players.length})</h2>
+          <section className="rounded-2xl border-4 border-emerald-700/40 bg-emerald-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+            <h2 className="mb-3 font-black uppercase tracking-wide text-emerald-900">
+              🙋 Spillere ({players.length})
+            </h2>
             {players.length === 0 ? (
-              <p className="text-sm text-neutral-500">Venter på spillere...</p>
+              <p className="text-sm font-semibold text-emerald-800/70">
+                Venter på spillere…
+              </p>
             ) : (
               <ul className="flex flex-wrap gap-2">
                 {players.map((p) => (
                   <li
                     key={p.id}
-                    className="rounded-full bg-neutral-100 px-3 py-1 text-sm"
+                    className="rounded-lg border-2 border-emerald-800/40 bg-[#fdf5e0] px-4 py-1.5 text-sm font-bold text-emerald-900"
                   >
                     {p.name}
                   </li>
@@ -160,25 +168,27 @@ export default function HostRoomClient({
             )}
           </section>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="text-sm font-semibold text-red-700">{error}</p>
+          )}
 
           <button
             type="button"
             onClick={doStart}
             disabled={pending || players.length < 2}
-            className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
+            className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-4 text-lg font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:border-stone-700 disabled:bg-stone-500"
           >
             {players.length < 2
               ? `Minst 2 spillere må joine (${players.length}/2)`
               : pending
-              ? "Starter..."
-              : "Start spill"}
+              ? "Starter…"
+              : "Start spill 🎬"}
           </button>
 
           <button
             type="button"
             onClick={doDelete}
-            className="text-sm text-red-600 underline"
+            className="text-sm font-semibold text-red-700 underline"
           >
             Slett rom
           </button>
@@ -223,32 +233,40 @@ function PlayingHostView({
 
   return (
     <>
-      <section className="rounded-2xl border border-neutral-200 p-4">
-        <p className="text-sm text-neutral-500">
+      <section className="rounded-2xl border-4 border-violet-950 bg-violet-900 px-5 py-4 text-violet-50 shadow-[6px_6px_0_0_#0b0420]">
+        <p className="text-xs font-black uppercase tracking-wide text-amber-300">
           Runde {round + 1} av {N}
         </p>
-        <p className="mt-1 text-lg font-semibold">
+        <p className="mt-1 text-2xl font-black uppercase">
           {totalSubmitted} av {players.length} har sendt inn
         </p>
       </section>
 
-      <section className="rounded-2xl border border-neutral-200 p-4">
-        <h2 className="mb-2 font-semibold">Spillere</h2>
+      <section className="rounded-2xl border-4 border-emerald-700/40 bg-emerald-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+        <h2 className="mb-3 font-black uppercase tracking-wide text-emerald-900">
+          🙋 Spillere
+        </h2>
         <ul className="flex flex-col gap-2">
           {players.map((p) => {
             const submitted = submittedIds.has(p.id);
             return (
               <li
                 key={p.id}
-                className="flex items-center justify-between rounded-lg bg-neutral-50 px-3 py-2"
+                className={`flex items-center justify-between rounded-lg border-2 px-3 py-2 ${
+                  submitted
+                    ? "border-emerald-700/50 bg-emerald-200 shadow-[2px_2px_0_0_rgba(0,0,0,0.15)]"
+                    : "border-emerald-800/30 bg-[#fdf5e0]"
+                }`}
               >
                 <span className="flex items-center gap-2">
                   <span
-                    className={`inline-block h-2 w-2 rounded-full ${
-                      submitted ? "bg-green-500" : "bg-neutral-300"
+                    className={`inline-block h-3 w-3 rounded-full border-2 ${
+                      submitted
+                        ? "border-emerald-900 bg-emerald-600"
+                        : "border-emerald-800/30 bg-white"
                     }`}
                   />
-                  <span>{p.name}</span>
+                  <span className="font-bold text-emerald-900">{p.name}</span>
                 </span>
               </li>
             );
@@ -256,25 +274,25 @@ function PlayingHostView({
         </ul>
       </section>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
 
       <button
         type="button"
         onClick={onNext}
         disabled={pending}
-        className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
+        className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
       >
         {pending
-          ? "Går videre..."
+          ? "Går videre…"
           : round + 1 >= N
-          ? "Gå til reveal"
-          : "Neste runde"}
+          ? "Gå til reveal 🎉"
+          : "Neste runde →"}
       </button>
 
       <button
         type="button"
         onClick={onDelete}
-        className="text-sm text-red-600 underline"
+        className="text-sm font-semibold text-red-700 underline"
       >
         Avbryt og slett rom
       </button>

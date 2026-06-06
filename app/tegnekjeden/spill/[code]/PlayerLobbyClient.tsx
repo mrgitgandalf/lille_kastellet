@@ -78,8 +78,10 @@ export default function PlayerLobbyClient({
   if (room.state !== "lobby" && !myPlayer) {
     return (
       <main className="text-center">
-        <h1 className="text-2xl font-semibold">Spillet er allerede i gang</h1>
-        <p className="mt-2 text-neutral-600">
+        <h1 className="text-2xl font-black uppercase text-rose-900">
+          Spillet er allerede i gang
+        </h1>
+        <p className="mt-2 font-semibold text-stone-700">
           Du kan ikke joine etter at host har startet runden.
         </p>
       </main>
@@ -89,9 +91,20 @@ export default function PlayerLobbyClient({
   if (!myPlayer) {
     return (
       <main className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Bli med i rom {room.code}</h1>
-        <form onSubmit={doJoin} className="flex flex-col gap-3">
-          <label className="text-sm font-semibold" htmlFor="name">
+        <header className="text-center">
+          <p className="text-5xl">🚪</p>
+          <h1 className="mt-3 text-3xl font-black uppercase tracking-tight text-violet-200 sm:text-4xl [text-shadow:_3px_3px_0_#5b21b6,_-2px_-2px_0_#5b21b6,_2px_-2px_0_#5b21b6,_-2px_2px_0_#5b21b6,_2px_2px_0_#5b21b6]">
+            Rom {room.code}
+          </h1>
+        </header>
+        <form
+          onSubmit={doJoin}
+          className="flex flex-col gap-3 rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-6 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]"
+        >
+          <label
+            className="text-sm font-black uppercase tracking-wide text-sky-900"
+            htmlFor="name"
+          >
             Navnet ditt
           </label>
           <input
@@ -101,15 +114,17 @@ export default function PlayerLobbyClient({
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={40}
-            className="rounded-lg border border-neutral-300 px-4 py-3 text-lg"
+            className="rounded-xl border-4 border-sky-700/40 bg-[#fdf5e0] px-4 py-3 text-lg font-bold text-sky-900 focus:border-sky-700 focus:outline-none"
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <p className="text-sm font-semibold text-red-700">{error}</p>
+          )}
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
+            className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
           >
-            {pending ? "Blir med..." : "Bli med"}
+            {pending ? "Blir med..." : "Bli med 🚀"}
           </button>
         </form>
       </main>
@@ -118,22 +133,27 @@ export default function PlayerLobbyClient({
 
   return (
     <main className="flex flex-col gap-6 text-center">
-      <h1 className="text-2xl font-semibold">Hei, {myPlayer.name}!</h1>
-      <p className="text-neutral-600">
+      <header>
+        <p className="text-6xl">👋</p>
+        <h1 className="mt-3 text-3xl font-black uppercase tracking-tight text-emerald-200 sm:text-4xl [text-shadow:_3px_3px_0_#065f46,_-2px_-2px_0_#065f46,_2px_-2px_0_#065f46,_-2px_2px_0_#065f46,_2px_2px_0_#065f46]">
+          Hei, {myPlayer.name}!
+        </h1>
+      </header>
+      <p className="font-semibold text-stone-700">
         Venter på at vert starter spillet. Hold telefonen klar.
       </p>
-      <section className="rounded-2xl border border-neutral-200 p-4">
-        <h2 className="mb-2 font-semibold">
+      <section className="rounded-2xl border-4 border-emerald-700/40 bg-emerald-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
+        <h2 className="mb-3 font-black uppercase tracking-wide text-emerald-900">
           Spillere i rommet ({players.length})
         </h2>
         <ul className="flex flex-wrap justify-center gap-2">
           {players.map((p) => (
             <li
               key={p.id}
-              className={`rounded-full px-3 py-1 text-sm ${
+              className={`rounded-lg border-2 px-4 py-1.5 text-sm font-bold ${
                 p.id === myPlayer.id
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-100"
+                  ? "border-violet-950 bg-violet-800 text-violet-50 shadow-[2px_2px_0_0_#0b0420]"
+                  : "border-emerald-800/40 bg-[#fdf5e0] text-emerald-900"
               }`}
             >
               {p.name}
