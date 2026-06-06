@@ -294,6 +294,39 @@ export async function submitGuess(input: {
   return { accepted: true, isCorrect: false };
 }
 
+export async function markTurnTimeout(input: {
+  roomId: string;
+  hostToken: string;
+}): Promise<void> {
+  const roomRows = (await sql`
+    select * from rooms
+    where id = ${input.roomId} and host_token = ${input.hostToken}
+      and game_type = 'gjettekampen'
+  `) as Room[];
+  const room = roomRows[0];
+  if (!room) throw new Error("Uautorisert eller ukjent rom.");
+  if (room.state !== "playing") return;
+
+  // Lukk kun den aktive turen (med timeout). Verten starter neste manuelt.
+  const updated = (await sql`
+    update gjette_turns set
+      state = 'finished',
+      ended_at = now(),
+      end_reason = 'timeout'
+    where room_id = ${room.id} and state = 'active'
+    returning id, word
+  `) as { id: string; word: string }[];
+
+  if (updated[0]) {
+    await publishRoomEvent(room.id, "turn.ended", {
+      turnId: updated[0].id,
+      winnerId: null,
+      word: updated[0].word,
+      endReason: "timeout",
+    });
+  }
+}
+
 export async function nextTurn(input: {
   roomId: string;
   hostToken: string;

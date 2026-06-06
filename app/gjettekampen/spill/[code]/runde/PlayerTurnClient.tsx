@@ -10,7 +10,7 @@ import { FinalReveal } from "@/components/FinalReveal";
 import { Confetti } from "@/components/Confetti";
 import Timer from "@/components/Timer";
 import { PraiseBanner } from "@/components/PraiseBanner";
-import { randomPraise } from "@/lib/praise";
+import { randomPraise, randomTimeout } from "@/lib/praise";
 import {
   getActiveTurn,
   getAllTurns,
@@ -59,6 +59,7 @@ export default function PlayerTurnClient({
   const [error, setError] = useState<string | null>(null);
   const [confettiTick, setConfettiTick] = useState(0);
   const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
+  const [timeoutMessage, setTimeoutMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
@@ -106,12 +107,20 @@ export default function PlayerTurnClient({
     channel.subscribe("room.updated", refreshRoom);
     channel.subscribe("players.updated", refreshPlayers);
     channel.subscribe("turn.started", refreshTurn);
-    channel.subscribe("turn.ended", async () => {
+    channel.subscribe("turn.ended", async (msg) => {
+      const data = msg.data as {
+        winnerId: string | null;
+        word: string;
+        endReason: string;
+      };
       setStandings(await getStandings(room.id));
       const t = await getActiveTurn(room.id);
       setActiveTurn(t);
       setTurns(await getAllTurns(room.id));
       if (t) setGuesses(await getGuessesForTurn(t.id));
+      if (data?.endReason === "timeout") {
+        setTimeoutMessage(randomTimeout(data.word));
+      }
     });
     channel.subscribe("guess.posted", async (msg) => {
       const data = msg.data as GjetteGuess;
@@ -209,6 +218,7 @@ export default function PlayerTurnClient({
       <main className="flex flex-col gap-5">
         <Confetti trigger={confettiTick} />
         <PraiseBanner message={praiseMessage} />
+        <PraiseBanner message={timeoutMessage} variant="timeout" />
         <header className="rounded-2xl bg-neutral-900 px-4 py-3 text-center text-white">
           <p className="text-xs uppercase tracking-wide text-neutral-400">
             {allDone ? "Spillet er slutt" : "Pause"}
@@ -236,6 +246,7 @@ export default function PlayerTurnClient({
     <main className="flex flex-col gap-4">
       <Confetti trigger={confettiTick} />
       <PraiseBanner message={praiseMessage} />
+      <PraiseBanner message={timeoutMessage} variant="timeout" />
 
       <header className="flex items-center justify-between rounded-2xl bg-neutral-900 px-4 py-3 text-white">
         <div>

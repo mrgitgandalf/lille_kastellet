@@ -37,3 +37,31 @@ export function randomPraise(name: string): string {
   const tpl = PRAISES[Math.floor(Math.random() * PRAISES.length)];
   return tpl.replace("{name}", name);
 }
+
+const TIMEOUTS: string[] = [
+  "Tiden er ute! Ordet var: {word} ⏰",
+  "Au au! Ingen gjettet {word} 😱",
+  "Pyttsann! {word} smatt unna! 🤷",
+  "Buhu, ingen klarte {word} 😭",
+  "Skuffende! Ordet var {word} 🙈",
+  "Næ-næ, {word} fikk fred denne gangen! 🤐",
+  "Ojsann! Ordet var: {word} 😬",
+  "Skikkelig vanskelig — det var {word}! 🤔",
+  "Bom! Riktig svar var: {word} 💥",
+  "Slutt! Ordet var: {word} ⛔",
+  "Glipp! Ingen fant {word} 😅",
+  "Surt! Ordet var: {word} 🍋",
+  "Ingen tegninger her kunne redde {word} 🎨",
+  "Ojda! {word} var løsningen 🫣",
+  "Klokken tikker — det var {word}! 🕰️",
+  "Whops, det var {word}! 🤯",
+  "Æsj! Ingen knekte {word} 🥲",
+  "Tiden gikk — {word} fikk vinge! 🦋",
+  "Fy søren! Ordet var: {word} 😵",
+  "Spilltiden er ute! Det var {word} 🎯",
+];
+
+export function randomTimeout(word: string): string {
+  const tpl = TIMEOUTS[Math.floor(Math.random() * TIMEOUTS.length)];
+  return tpl.replace("{word}", word);
+}

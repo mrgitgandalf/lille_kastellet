@@ -10,7 +10,7 @@ import { GuessFeed } from "@/components/GuessFeed";
 import { Standings } from "@/components/Standings";
 import { FinalReveal } from "@/components/FinalReveal";
 import { PraiseBanner } from "@/components/PraiseBanner";
-import { randomPraise } from "@/lib/praise";
+import { randomPraise, randomTimeout } from "@/lib/praise";
 import {
   deleteRoom,
   endGame,
@@ -21,6 +21,7 @@ import {
   getRoomById,
   getStandings,
   getWords,
+  markTurnTimeout,
   nextTurn,
   setWords,
   skipTurn,
@@ -68,8 +69,9 @@ export default function HostRoomClient({
   );
   const [hostToken, setHostToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [wordHidden, setWordHidden] = useState(false);
+  const [wordHidden, setWordHidden] = useState(true);
   const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
+  const [timeoutMessage, setTimeoutMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
@@ -100,18 +102,26 @@ export default function HostRoomClient({
       setStandings(await getStandings(room.id));
       setExternalStrokes([]);
       setGuesses(t ? await getGuessesForTurn(t.id) : []);
-      setWordHidden(false);
+      // wordHidden beholdes mellom turer — verten styrer det selv
     };
 
     channel.subscribe("room.updated", refreshRoom);
     channel.subscribe("players.updated", refreshPlayers);
     channel.subscribe("turn.started", refreshActiveTurn);
-    channel.subscribe("turn.ended", async () => {
+    channel.subscribe("turn.ended", async (msg) => {
+      const data = msg.data as {
+        winnerId: string | null;
+        word: string;
+        endReason: string;
+      };
       setStandings(await getStandings(room.id));
       const t = await getActiveTurn(room.id);
       setActiveTurn(t);
       setTurns(await getAllTurns(room.id));
       if (t) setGuesses(await getGuessesForTurn(t.id));
+      if (data?.endReason === "timeout") {
+        setTimeoutMessage(randomTimeout(data.word));
+      }
     });
     channel.subscribe("guess.posted", async (msg) => {
       const data = msg.data as GjetteGuess;
@@ -350,7 +360,8 @@ export default function HostRoomClient({
     if (!hostToken || !activeTurn) return;
     if (expiredTurnRef.current === activeTurn.id) return;
     expiredTurnRef.current = activeTurn.id;
-    nextTurn({ roomId: room.id, hostToken }).catch((err) => {
+    // Bare avslutt aktiv tur — verten klikker «Start neste runde» selv
+    markTurnTimeout({ roomId: room.id, hostToken }).catch((err) => {
       setError(err instanceof Error ? err.message : "Feil ved timeout.");
       expiredTurnRef.current = null;
     });
@@ -398,6 +409,7 @@ export default function HostRoomClient({
         )}
       </header>
       <PraiseBanner message={praiseMessage} />
+      <PraiseBanner message={timeoutMessage} variant="timeout" />
 
       {activeTurn && (
         <DrawingCanvas
