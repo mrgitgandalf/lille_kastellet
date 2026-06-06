@@ -10,7 +10,6 @@ import { GuessFeed } from "@/components/GuessFeed";
 import { Standings } from "@/components/Standings";
 import { FinalReveal } from "@/components/FinalReveal";
 import { PraiseBanner } from "@/components/PraiseBanner";
-import { randomPraise, randomTimeout } from "@/lib/praise";
 import {
   deleteRoom,
   endGame,
@@ -114,26 +113,24 @@ export default function HostRoomClient({
         winnerId: string | null;
         word: string;
         endReason: string;
+        timeoutMessage?: string;
       };
       setStandings(await getStandings(room.id));
       const t = await getActiveTurn(room.id);
       setActiveTurn(t);
       setTurns(await getAllTurns(room.id));
       if (t) setGuesses(await getGuessesForTurn(t.id));
-      if (data?.endReason === "timeout") {
-        setTimeoutMessage(randomTimeout(data.word));
+      if (data?.endReason === "timeout" && data.timeoutMessage) {
+        setTimeoutMessage(data.timeoutMessage);
       }
     });
     channel.subscribe("guess.posted", async (msg) => {
-      const data = msg.data as GjetteGuess;
+      const data = msg.data as GjetteGuess & { praiseMessage?: string };
       setGuesses((prev) =>
         prev.some((g) => g.id === data.id) ? prev : [...prev, data],
       );
-      if (data.is_correct) {
-        const player =
-          (await getPlayers(room.id)).find((p) => p.id === data.player_id) ??
-          null;
-        setPraiseMessage(randomPraise(player?.name ?? "Spiller"));
+      if (data.is_correct && data.praiseMessage) {
+        setPraiseMessage(data.praiseMessage);
       }
     });
     channel.subscribe("game.finished", async () => {

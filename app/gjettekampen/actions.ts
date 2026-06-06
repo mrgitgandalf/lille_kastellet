@@ -6,6 +6,7 @@ import { sql } from "@/lib/db";
 import { publishRoomEvent } from "@/lib/ably-server";
 import { generateRoomCode } from "@/lib/roomCode";
 import { shuffle } from "@/lib/game";
+import { randomPraise, randomTimeout } from "@/lib/praise";
 import type {
   GjetteGuess,
   GjetteTurn,
@@ -261,6 +262,7 @@ export async function submitGuess(input: {
       values (${turn.id}, ${player.id}, ${parsed.text}, true)
       returning id, created_at
     `) as { id: string; created_at: string }[];
+    const praiseMessage = randomPraise(player.name);
     await publishRoomEvent(player.room_id, "guess.posted", {
       id: ins[0].id,
       turn_id: turn.id,
@@ -268,6 +270,7 @@ export async function submitGuess(input: {
       text: parsed.text,
       is_correct: true,
       created_at: ins[0].created_at,
+      praiseMessage,
     });
     await publishRoomEvent(player.room_id, "turn.ended", {
       turnId: turn.id,
@@ -323,6 +326,7 @@ export async function markTurnTimeout(input: {
       winnerId: null,
       word: updated[0].word,
       endReason: "timeout",
+      timeoutMessage: randomTimeout(updated[0].word),
     });
   }
 }
@@ -359,6 +363,7 @@ export async function nextTurn(input: {
       winnerId: null,
       word: active[0].word,
       endReason: "timeout",
+      timeoutMessage: randomTimeout(active[0].word),
     });
   }
 
