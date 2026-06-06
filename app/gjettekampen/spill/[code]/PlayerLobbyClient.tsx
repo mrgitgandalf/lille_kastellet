@@ -89,9 +89,17 @@ export default function PlayerLobbyClient({
   if (!myPlayer) {
     return (
       <main className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">Bli med i rom {room.code}</h1>
-        <form onSubmit={doJoin} className="flex flex-col gap-3">
-          <label className="text-sm font-semibold" htmlFor="name">
+        <header className="text-center">
+          <p className="text-4xl">🚪</p>
+          <h1 className="mt-2 text-3xl font-black text-rose-800">
+            Bli med i rom {room.code}
+          </h1>
+        </header>
+        <form
+          onSubmit={doJoin}
+          className="flex flex-col gap-3 rounded-3xl border-2 border-amber-200 bg-white/80 p-6 shadow-xl backdrop-blur"
+        >
+          <label className="text-sm font-bold text-amber-900" htmlFor="name">
             Navnet ditt
           </label>
           <input
@@ -101,15 +109,15 @@ export default function PlayerLobbyClient({
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={40}
-            className="rounded-lg border border-neutral-300 px-4 py-3 text-lg"
+            className="rounded-xl border-2 border-amber-200 bg-white px-4 py-3 text-lg focus:border-amber-500 focus:outline-none"
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={pending}
-            className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
+            className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-3 font-bold text-white shadow-md transition hover:from-orange-600 hover:to-rose-600 disabled:opacity-50"
           >
-            {pending ? "Blir med..." : "Bli med"}
+            {pending ? "Blir med..." : "Bli med 🚀"}
           </button>
         </form>
       </main>
@@ -118,23 +126,28 @@ export default function PlayerLobbyClient({
 
   return (
     <main className="flex flex-col gap-6 text-center">
-      <h1 className="text-2xl font-semibold">Hei, {myPlayer.name}!</h1>
-      <p className="text-neutral-600">
+      <header>
+        <p className="text-5xl">👋</p>
+        <h1 className="mt-2 text-4xl font-black text-rose-800">
+          Hei, {myPlayer.name}!
+        </h1>
+      </header>
+      <p className="text-neutral-700">
         Venter på at vert starter spillet. Hold telefonen klar – du kommer
-        kanskje til å tegne!
+        kanskje til å tegne! ✏️
       </p>
-      <section className="rounded-2xl border border-neutral-200 p-4">
-        <h2 className="mb-2 font-semibold">
+      <section className="rounded-3xl border-2 border-amber-200 bg-white/80 p-5 shadow-xl backdrop-blur">
+        <h2 className="mb-3 font-bold text-amber-900">
           Spillere i rommet ({players.length})
         </h2>
         <ul className="flex flex-wrap justify-center gap-2">
           {players.map((p) => (
             <li
               key={p.id}
-              className={`rounded-full px-3 py-1 text-sm ${
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold ${
                 p.id === myPlayer.id
-                  ? "bg-neutral-900 text-white"
-                  : "bg-neutral-100"
+                  ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow"
+                  : "bg-amber-100 text-amber-900"
               }`}
             >
               {p.name}

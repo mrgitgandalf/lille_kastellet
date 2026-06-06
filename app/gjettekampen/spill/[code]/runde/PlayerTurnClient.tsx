@@ -216,17 +216,17 @@ export default function PlayerTurnClient({
         <Confetti trigger={confettiTick} />
         <PraiseBanner message={praiseMessage} />
         <PraiseBanner message={timeoutMessage} variant="timeout" />
-        <header className="rounded-2xl bg-neutral-900 px-4 py-3 text-center text-white">
-          <p className="text-xs uppercase tracking-wide text-neutral-400">
-            {allDone ? "Spillet er slutt" : "Pause"}
+        <header className="rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-center text-white shadow-xl ring-2 ring-amber-400/30">
+          <p className="text-xs font-bold uppercase tracking-wide text-amber-300">
+            {allDone ? "🏁 Spillet er slutt" : "⏸️ Pause"}
           </p>
-          <p className="text-lg font-semibold">
+          <p className="text-xl font-black">
             {remaining} ord igjen ({finishedCount}/{totalTurns})
           </p>
         </header>
-        <section className="rounded-2xl border border-neutral-200 p-4">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-            Stilling
+        <section className="rounded-3xl border-2 border-rose-200 bg-white/80 p-4 shadow-xl backdrop-blur">
+          <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-rose-900">
+            🏆 Stilling
           </h2>
           <Standings standings={standings} />
         </section>
@@ -245,22 +245,24 @@ export default function PlayerTurnClient({
       <PraiseBanner message={praiseMessage} />
       <PraiseBanner message={timeoutMessage} variant="timeout" />
 
-      <header className="flex items-center justify-between rounded-2xl bg-neutral-900 px-4 py-3 text-white">
+      <header className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-white shadow-xl ring-2 ring-amber-400/30">
         <div>
-          <p className="text-xs uppercase tracking-wide text-neutral-400">
+          <p className="text-xs uppercase tracking-wide text-amber-300">
             {remaining} ord igjen
           </p>
-          <p className="text-base font-semibold">
+          <p className="text-xl font-black">
             {finishedCount + 1}/{totalTurns}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xs uppercase tracking-wide text-neutral-400">
-            {isDrawer ? "Du tegner" : "Tegner"}
+          <p className="text-xs uppercase tracking-wide text-amber-300">
+            {isDrawer ? "✏️ Du tegner" : "✏️ Tegner"}
           </p>
-          <p className="text-lg font-semibold">{drawer?.name ?? "?"}</p>
+          <p className="text-xl font-black">{drawer?.name ?? "?"}</p>
           {isDrawer && (
-            <p className="text-sm text-yellow-300">Ord: {activeTurn.word}</p>
+            <p className="text-base font-bold text-yellow-300">
+              Ord: {activeTurn.word}
+            </p>
           )}
           {room.round_seconds > 0 && activeTurn.started_at && (
             <div className="mt-1">
@@ -299,15 +301,15 @@ export default function PlayerTurnClient({
               onChange={(e) => setGuess(e.target.value)}
               maxLength={200}
               placeholder="Skriv gjetning…"
-              className="flex-1 rounded-lg border border-neutral-300 px-3 py-2"
+              className="flex-1 rounded-xl border-2 border-amber-200 bg-white px-3 py-3 text-base focus:border-amber-500 focus:outline-none"
               autoFocus
             />
             <button
               type="submit"
               disabled={pending || guess.trim().length === 0}
-              className="rounded-lg bg-neutral-900 px-4 py-2 text-white disabled:opacity-50"
+              className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-3 font-bold text-white shadow-md transition hover:from-orange-600 hover:to-rose-600 disabled:opacity-50"
             >
-              Send
+              Send 🎯
             </button>
           </form>
         </>
@@ -315,16 +317,16 @@ export default function PlayerTurnClient({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Gjetninger
+      <section className="rounded-3xl border-2 border-amber-200 bg-white/80 p-4 shadow-xl backdrop-blur">
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-amber-900">
+          💬 Gjetninger
         </h2>
         <GuessFeed guesses={guesses} players={players} />
       </section>
 
-      <section className="rounded-2xl border border-neutral-200 p-4">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Stilling
+      <section className="rounded-3xl border-2 border-rose-200 bg-white/80 p-4 shadow-xl backdrop-blur">
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-rose-900">
+          🏆 Stilling
         </h2>
         <Standings standings={standings} />
       </section>

@@ -33,14 +33,14 @@ export default function JoinForm() {
         value={code}
         onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
         placeholder="0000"
-        className="rounded-lg border border-neutral-300 px-4 py-3 text-2xl tracking-[0.4em]"
+        className="rounded-xl border-2 border-amber-200 bg-white px-4 py-4 text-center text-3xl font-bold tracking-[0.4em] focus:border-amber-500 focus:outline-none"
       />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button
         type="submit"
-        className="rounded-lg bg-neutral-900 px-4 py-3 text-white"
+        className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-3 font-bold text-white shadow-md transition hover:from-orange-600 hover:to-rose-600"
       >
-        Bli med
+        Bli med 🚀
       </button>
     </form>
   );

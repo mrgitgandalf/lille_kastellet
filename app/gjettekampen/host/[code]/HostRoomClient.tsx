@@ -264,27 +264,33 @@ export default function HostRoomClient({
     return (
       <main className="flex flex-col gap-6">
         <header className="text-center">
-          <p className="text-sm uppercase tracking-widest text-neutral-500">Romkode</p>
-          <p className="text-6xl font-bold tracking-[0.3em]">{room.code}</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-700">
+            🎮 Romkode
+          </p>
+          <p className="bg-gradient-to-br from-orange-600 to-rose-600 bg-clip-text text-7xl font-black tracking-[0.2em] text-transparent">
+            {room.code}
+          </p>
         </header>
 
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-amber-200 bg-white/80 p-5 shadow-xl backdrop-blur">
           {joinUrl && <RoomQRCode url={joinUrl} />}
-          <p className="text-sm text-neutral-600">
+          <p className="text-sm text-neutral-700">
             Scan eller gå til <strong>{joinUrl}</strong>
           </p>
         </div>
 
-        <section className="rounded-2xl border border-neutral-200 p-4">
-          <h2 className="mb-2 font-semibold">Spillere ({players.length})</h2>
+        <section className="rounded-3xl border-2 border-amber-200 bg-white/80 p-5 shadow-xl backdrop-blur">
+          <h2 className="mb-3 font-bold text-amber-900">
+            🙋 Spillere ({players.length})
+          </h2>
           {players.length === 0 ? (
-            <p className="text-sm text-neutral-500">Venter på spillere...</p>
+            <p className="text-sm text-neutral-500">Venter på spillere…</p>
           ) : (
             <ul className="flex flex-wrap gap-2">
               {players.map((p) => (
                 <li
                   key={p.id}
-                  className="rounded-full bg-neutral-100 px-3 py-1 text-sm"
+                  className="rounded-full bg-amber-100 px-4 py-1.5 text-sm font-semibold text-amber-900"
                 >
                   {p.name}
                 </li>
@@ -293,9 +299,9 @@ export default function HostRoomClient({
           )}
         </section>
 
-        <section className="rounded-2xl border border-neutral-200 p-4">
-          <h2 className="mb-2 font-semibold">
-            Ord ({liveWordCount}) — én per linje
+        <section className="rounded-3xl border-2 border-rose-200 bg-white/80 p-5 shadow-xl backdrop-blur">
+          <h2 className="mb-3 font-bold text-rose-900">
+            📝 Ord ({liveWordCount}) — én per linje
           </h2>
           <textarea
             value={wordsText}
@@ -303,9 +309,9 @@ export default function HostRoomClient({
             onBlur={doSetWords}
             rows={8}
             placeholder={"sykkel\nflyplass\nelefant\n..."}
-            className="w-full rounded-lg border border-neutral-300 px-3 py-2 font-mono text-sm"
+            className="w-full rounded-xl border-2 border-rose-200 bg-white px-3 py-2 font-mono text-sm focus:border-rose-500 focus:outline-none"
           />
-          <p className="mt-2 text-xs text-neutral-500">
+          <p className="mt-2 text-xs text-neutral-600">
             {players.length >= 2 && liveWordCount >= players.length
               ? `Spillet bruker ${
                   Math.floor(liveWordCount / players.length) * players.length
@@ -326,15 +332,15 @@ export default function HostRoomClient({
           disabled={
             pending || players.length < 2 || liveWordCount < players.length
           }
-          className="rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
+          className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-4 text-lg font-bold text-white shadow-lg transition hover:from-orange-600 hover:to-rose-600 disabled:bg-neutral-400 disabled:from-neutral-400 disabled:to-neutral-400"
         >
           {players.length < 2
             ? `Minst 2 spillere må joine (${players.length}/2)`
             : liveWordCount < players.length
             ? `Trenger ${players.length - liveWordCount} ord til`
             : pending
-            ? "Starter..."
-            : "Start spill"}
+            ? "Starter…"
+            : "Start spill 🎬"}
         </button>
 
         <button
@@ -372,12 +378,12 @@ export default function HostRoomClient({
 
   return (
     <main className="flex flex-col gap-5">
-      <header className="flex items-center justify-between rounded-2xl bg-neutral-900 px-4 py-3 text-white">
+      <header className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-neutral-900 to-neutral-800 px-5 py-4 text-white shadow-xl ring-2 ring-amber-400/30">
         <div>
-          <p className="text-xs uppercase tracking-wide text-neutral-400">
-            Vert-visning · Rom {room.code}
+          <p className="text-xs uppercase tracking-wide text-amber-300">
+            🎙️ Vert-visning · Rom {room.code}
           </p>
-          <p className="text-lg font-semibold">
+          <p className="text-2xl font-black">
             {remaining} ord igjen ({finishedCount}/{totalTurns})
           </p>
         </div>
@@ -422,16 +428,16 @@ export default function HostRoomClient({
         />
       )}
 
-      <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Gjetninger
+      <section className="rounded-3xl border-2 border-amber-200 bg-white/80 p-4 shadow-xl backdrop-blur">
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-amber-900">
+          💬 Gjetninger
         </h2>
         <GuessFeed guesses={guesses} players={players} />
       </section>
 
-      <section className="rounded-2xl border border-neutral-200 p-4">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Stilling
+      <section className="rounded-3xl border-2 border-rose-200 bg-white/80 p-4 shadow-xl backdrop-blur">
+        <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-rose-900">
+          🏆 Stilling
         </h2>
         <Standings standings={standings} />
       </section>
@@ -443,22 +449,22 @@ export default function HostRoomClient({
           type="button"
           onClick={doNext}
           disabled={pending}
-          className="flex-1 rounded-lg bg-neutral-900 px-4 py-3 text-white disabled:opacity-50"
+          className="flex-1 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-4 py-3 font-bold text-white shadow-lg transition hover:from-orange-600 hover:to-rose-600 disabled:opacity-50"
         >
           {remaining === 0
-            ? "Avslutt og vis resultat"
+            ? "Avslutt og vis resultat 🏁"
             : activeTurn
-            ? "Neste runde"
-            : "Start neste runde"}
+            ? "Neste runde →"
+            : "Start neste runde →"}
         </button>
         {activeTurn && (
           <button
             type="button"
             onClick={doSkip}
             disabled={pending}
-            className="rounded-lg border border-neutral-300 px-4 py-3 text-sm"
+            className="rounded-xl border-2 border-amber-300 bg-white px-4 py-3 text-sm font-semibold text-amber-900 hover:bg-amber-50"
           >
-            Hopp over runde
+            Hopp over
           </button>
         )}
       </div>
