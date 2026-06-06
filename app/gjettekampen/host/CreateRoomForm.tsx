@@ -34,20 +34,25 @@ export default function CreateRoomForm() {
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5">
-      <fieldset className="flex flex-col gap-3 rounded-2xl border border-neutral-200 p-4">
-        <legend className="px-2 text-sm font-semibold">Tid per tegne-runde</legend>
+      <fieldset className="flex flex-col gap-3 rounded-xl border-4 border-sky-700/40 bg-sky-50 p-4 shadow-[3px_3px_0_0_rgba(0,0,0,0.12)]">
+        <legend className="px-2 text-xs font-black uppercase tracking-wide text-sky-900">
+          ⏱ Tid per tegne-runde
+        </legend>
         <label className="flex cursor-pointer items-center gap-3">
           <input
             type="checkbox"
             checked={roundSeconds === 0}
             onChange={(e) => setRoundSeconds(e.target.checked ? 0 : 180)}
+            className="h-5 w-5 accent-violet-800"
           />
-          <span className="text-sm">Ingen tidsbegrensning</span>
+          <span className="text-sm font-bold text-sky-900">
+            Ingen tidsbegrensning
+          </span>
         </label>
         {roundSeconds > 0 && (
           <label className="flex flex-col gap-2">
-            <span className="text-sm">
-              {roundSeconds} sekunder per runde
+            <span className="text-sm font-bold text-sky-900">
+              <strong className="text-base">{roundSeconds}s</strong> per runde
             </span>
             <input
               type="range"
@@ -56,19 +61,23 @@ export default function CreateRoomForm() {
               step={15}
               value={roundSeconds}
               onChange={(e) => setRoundSeconds(parseInt(e.target.value, 10))}
+              className="accent-violet-800"
             />
           </label>
         )}
-        <span className="text-xs text-neutral-500">
+        <span className="text-xs font-semibold text-sky-800/70">
           Maks 3 min (240 s) anbefales. Du kan alltid avslutte en runde manuelt.
         </span>
       </fieldset>
 
-      <fieldset className="flex flex-col gap-4 rounded-2xl border border-neutral-200 p-4">
-        <legend className="px-2 text-sm font-semibold">Poenggiving</legend>
+      <fieldset className="flex flex-col gap-4 rounded-xl border-4 border-emerald-700/40 bg-emerald-50 p-4 shadow-[3px_3px_0_0_rgba(0,0,0,0.12)]">
+        <legend className="px-2 text-xs font-black uppercase tracking-wide text-emerald-900">
+          🎯 Poenggiving
+        </legend>
         <label className="flex flex-col gap-2">
-          <span className="text-sm">
-            Poeng til første riktige gjetter: <strong>{guessPoints}p</strong>
+          <span className="text-sm font-bold text-emerald-900">
+            Poeng til første riktige gjetter:{" "}
+            <strong className="text-base">{guessPoints}p</strong>
           </span>
           <input
             type="range"
@@ -77,12 +86,13 @@ export default function CreateRoomForm() {
             step={1}
             value={guessPoints}
             onChange={(e) => setGuessPoints(parseInt(e.target.value, 10))}
+            className="accent-violet-800"
           />
         </label>
         <label className="flex flex-col gap-2">
-          <span className="text-sm">
+          <span className="text-sm font-bold text-emerald-900">
             Poeng til tegner når noen gjetter riktig:{" "}
-            <strong>{drawerPoints}p</strong>
+            <strong className="text-base">{drawerPoints}p</strong>
           </span>
           <input
             type="range"
@@ -91,14 +101,15 @@ export default function CreateRoomForm() {
             step={1}
             value={drawerPoints}
             onChange={(e) => setDrawerPoints(parseInt(e.target.value, 10))}
+            className="accent-violet-800"
           />
         </label>
-        <span className="text-xs text-neutral-500">
+        <span className="text-xs font-semibold text-emerald-800/70">
           Standard: 1p til gjetter, 3p til tegner. Sett til 0 for å skru av.
         </span>
       </fieldset>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
 
       <button
         type="submit"

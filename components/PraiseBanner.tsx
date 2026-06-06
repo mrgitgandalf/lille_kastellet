@@ -27,8 +27,8 @@ export function PraiseBanner({
   if (!current) return null;
   const tone =
     variant === "timeout"
-      ? "bg-orange-300 ring-orange-500"
-      : "bg-yellow-300 ring-yellow-500";
+      ? "border-orange-900 bg-orange-200 shadow-[6px_6px_0_0_#7c2d12]"
+      : "border-amber-900 bg-amber-200 shadow-[6px_6px_0_0_#78350f]";
   return (
     <div
       className={`pointer-events-none fixed inset-x-0 top-1/4 z-50 flex justify-center px-4 transition-opacity duration-300 ${
@@ -37,9 +37,9 @@ export function PraiseBanner({
       aria-live="polite"
     >
       <div
-        className={`max-w-2xl rounded-3xl px-8 py-6 text-center shadow-2xl ring-4 ${tone}`}
+        className={`max-w-2xl rounded-2xl border-4 px-8 py-6 text-center ${tone}`}
       >
-        <p className="text-3xl font-black leading-tight text-neutral-900 sm:text-5xl">
+        <p className="text-2xl font-black uppercase leading-tight text-neutral-900 sm:text-5xl">
           {current}
         </p>
       </div>

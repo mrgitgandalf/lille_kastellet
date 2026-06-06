@@ -6,7 +6,7 @@ export default function GjettekampenLanding() {
     <main className="flex flex-col gap-8">
       <header className="text-center">
         <p className="text-5xl tracking-widest">🎨 ✏️ 🎯</p>
-        <h1 className="mt-4 text-6xl font-black uppercase tracking-tight text-violet-200 [text-shadow:_3px_3px_0_#5b21b6,_-2px_-2px_0_#5b21b6,_2px_-2px_0_#5b21b6,_-2px_2px_0_#5b21b6,_2px_2px_0_#5b21b6]">
+        <h1 className="mt-4 text-4xl font-black uppercase tracking-tight text-violet-200 sm:text-6xl [text-shadow:_3px_3px_0_#5b21b6,_-2px_-2px_0_#5b21b6,_2px_-2px_0_#5b21b6,_-2px_2px_0_#5b21b6,_2px_2px_0_#5b21b6]">
           Gjettekampen
         </h1>
         <p className="mt-4 text-sm font-semibold text-stone-700">

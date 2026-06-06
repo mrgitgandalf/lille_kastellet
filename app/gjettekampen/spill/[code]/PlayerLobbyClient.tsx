@@ -91,7 +91,7 @@ export default function PlayerLobbyClient({
       <main className="flex flex-col gap-4">
         <header className="text-center">
           <p className="text-5xl">🚪</p>
-          <h1 className="mt-3 text-4xl font-black uppercase tracking-tight text-violet-200 [text-shadow:_3px_3px_0_#5b21b6,_-2px_-2px_0_#5b21b6,_2px_-2px_0_#5b21b6,_-2px_2px_0_#5b21b6,_2px_2px_0_#5b21b6]">
+          <h1 className="mt-3 text-3xl font-black uppercase tracking-tight text-violet-200 sm:text-4xl [text-shadow:_3px_3px_0_#5b21b6,_-2px_-2px_0_#5b21b6,_2px_-2px_0_#5b21b6,_-2px_2px_0_#5b21b6,_2px_2px_0_#5b21b6]">
             Rom {room.code}
           </h1>
         </header>
@@ -133,7 +133,7 @@ export default function PlayerLobbyClient({
     <main className="flex flex-col gap-6 text-center">
       <header>
         <p className="text-6xl">👋</p>
-        <h1 className="mt-3 text-4xl font-black uppercase tracking-tight text-emerald-200 [text-shadow:_3px_3px_0_#065f46,_-2px_-2px_0_#065f46,_2px_-2px_0_#065f46,_-2px_2px_0_#065f46,_2px_2px_0_#065f46]">
+        <h1 className="mt-3 text-3xl font-black uppercase tracking-tight text-emerald-200 sm:text-4xl [text-shadow:_3px_3px_0_#065f46,_-2px_-2px_0_#065f46,_2px_-2px_0_#065f46,_-2px_2px_0_#065f46,_2px_2px_0_#065f46]">
           Hei, {myPlayer.name}!
         </h1>
       </header>

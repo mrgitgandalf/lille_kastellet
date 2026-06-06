@@ -267,7 +267,7 @@ export default function HostRoomClient({
           <p className="text-xs font-black uppercase tracking-widest text-violet-700">
             🎮 Romkode
           </p>
-          <p className="mt-2 text-7xl font-black tracking-[0.2em] text-violet-200 [text-shadow:_4px_4px_0_#5b21b6,_-3px_-3px_0_#5b21b6,_3px_-3px_0_#5b21b6,_-3px_3px_0_#5b21b6,_3px_3px_0_#5b21b6]">
+          <p className="mt-2 text-5xl font-black tracking-[0.2em] text-violet-200 sm:text-7xl [text-shadow:_4px_4px_0_#5b21b6,_-3px_-3px_0_#5b21b6,_3px_-3px_0_#5b21b6,_-3px_3px_0_#5b21b6,_3px_3px_0_#5b21b6]">
             {room.code}
           </p>
         </header>
