@@ -39,6 +39,11 @@ export async function createRoom(input: {
     .split("\n")
     .map((w) => w.trim())
     .filter((w) => w.length > 0 && w.length <= 100);
+  if (words.length < 2) {
+    throw new Error(
+      `Trenger minst 2 ord for å opprette rommet (du har ${words.length}).`,
+    );
+  }
 
   for (let attempt = 0; attempt < 8; attempt++) {
     const code = generateRoomCode();

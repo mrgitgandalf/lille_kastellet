@@ -19,10 +19,8 @@ import {
   getPlayers,
   getRoomById,
   getStandings,
-  getWords,
   markTurnTimeout,
   nextTurn,
-  setWords,
   skipTurn,
   startGame,
 } from "../../actions";
@@ -57,22 +55,18 @@ export default function HostRoomClient({
   const router = useRouter();
   const [room, setRoom] = useState<Room>(initialRoom);
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
-  const [words, setWordsState] = useState<GjetteWord[]>(initialWords);
+  const [words] = useState<GjetteWord[]>(initialWords);
   const [turns, setTurns] = useState<GjetteTurn[]>(initialTurns);
   const [activeTurn, setActiveTurn] = useState<GjetteTurn | null>(initialActiveTurn);
   const [guesses, setGuesses] = useState<GjetteGuess[]>(initialGuesses);
   const [standings, setStandings] = useState<Standing[]>(initialStandings);
   const [externalStrokes, setExternalStrokes] = useState<Stroke[]>([]);
-  const [wordsText, setWordsText] = useState(
-    initialWords.map((w) => w.word).join("\n"),
-  );
   const [hostToken, setHostToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [wordHidden, setWordHidden] = useState(true);
   const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
   const [timeoutMessage, setTimeoutMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const [, startSaveWordsTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
   > | null>(null);
@@ -156,29 +150,11 @@ export default function HostRoomClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room.id, activeTurn?.id]);
 
-  // Autosave på blur — kjører i egen transition så Start-knappen ikke
-  // disables av et samtidig blur-trigget setWords-kall.
-  function doSetWords() {
-    if (!hostToken) return;
-    setError(null);
-    startSaveWordsTransition(async () => {
-      try {
-        await setWords({ roomId: room.id, hostToken, wordsText });
-        setWordsState(await getWords(room.id));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Feil.");
-      }
-    });
-  }
-
   function doStart() {
     if (!hostToken) return setError("Mangler host-token. Last siden på nytt.");
     setError(null);
     startTransition(async () => {
       try {
-        // Lagre nyeste ord-input før vi starter (i tilfelle bruker
-        // klikker Start uten å ha blurret tekstområdet).
-        await setWords({ roomId: room.id, hostToken, wordsText });
         await startGame({ roomId: room.id, hostToken });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Kunne ikke starte.");
@@ -232,11 +208,6 @@ export default function HostRoomClient({
       }
     });
   }
-
-  const liveWordCount = wordsText
-    .split("\n")
-    .map((w) => w.trim())
-    .filter((w) => w.length > 0).length;
 
   const joinUrl =
     typeof window !== "undefined"
@@ -301,30 +272,14 @@ export default function HostRoomClient({
           )}
         </section>
 
-        <section className="rounded-2xl border-4 border-rose-700/40 bg-rose-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
-          <h2 className="mb-3 font-black uppercase tracking-wide text-rose-900">
-            📝 Ord ({liveWordCount}) — én per linje
-          </h2>
-          <textarea
-            value={wordsText}
-            onChange={(e) => setWordsText(e.target.value)}
-            onBlur={doSetWords}
-            rows={8}
-            placeholder={"sykkel\nflyplass\nelefant\n..."}
-            className="w-full rounded-xl border-4 border-rose-700/40 bg-[#fdf5e0] px-3 py-2 font-mono text-sm font-semibold text-rose-900 focus:border-rose-700 focus:outline-none"
-          />
-          <p className="mt-2 text-xs font-semibold text-rose-900/80">
-            {players.length >= 2 && liveWordCount >= players.length
-              ? `Spillet bruker ${
-                  Math.floor(liveWordCount / players.length) * players.length
-                } ord (${Math.floor(liveWordCount / players.length)} per spiller). ${
-                  liveWordCount % players.length > 0
-                    ? `${liveWordCount % players.length} overskudd-ord brukes ikke.`
-                    : ""
-                }`
-              : `Trenger minst ${Math.max(2, players.length)} ord (én per spiller).`}
-          </p>
-        </section>
+        <p className="text-center text-sm font-semibold text-stone-600">
+          📝 {words.length} ord lastet opp ·{" "}
+          {players.length >= 2 && words.length >= players.length
+            ? `bruker ${
+                Math.floor(words.length / players.length) * players.length
+              } ord (${Math.floor(words.length / players.length)} per spiller)`
+            : `trenger minst ${Math.max(2, players.length)} ord`}
+        </p>
 
         {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
 
@@ -332,14 +287,14 @@ export default function HostRoomClient({
           type="button"
           onClick={doStart}
           disabled={
-            pending || players.length < 2 || liveWordCount < players.length
+            pending || players.length < 2 || words.length < players.length
           }
           className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-4 text-lg font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:border-stone-700 disabled:bg-stone-500"
         >
           {players.length < 2
             ? `Minst 2 spillere må joine (${players.length}/2)`
-            : liveWordCount < players.length
-            ? `Trenger ${players.length - liveWordCount} ord til`
+            : words.length < players.length
+            ? `Trenger ${players.length - words.length} ord til`
             : pending
             ? "Starter…"
             : "Start spill 🎬"}

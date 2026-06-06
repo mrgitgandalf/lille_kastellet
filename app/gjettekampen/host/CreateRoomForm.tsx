@@ -21,6 +21,12 @@ export default function CreateRoomForm() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (liveWordCount < 2) {
+      setError(
+        `Trenger minst 2 ord (du har ${liveWordCount}). Legg til flere før du oppretter rommet.`,
+      );
+      return;
+    }
     startTransition(async () => {
       try {
         const { code, hostToken } = await createRoom({
@@ -128,9 +134,8 @@ export default function CreateRoomForm() {
           className="w-full rounded-xl border-4 border-rose-700/40 bg-[#fdf5e0] px-3 py-2 font-mono text-sm font-semibold text-rose-900 focus:border-rose-700 focus:outline-none"
         />
         <span className="text-xs font-semibold text-rose-900/70">
-          Valgfritt nå — du kan også legge inn / endre ord på rom-siden
-          etterpå. Trenger minst like mange ord som spillere før spillet kan
-          starte.
+          Ord-listen settes opp her — du kan ikke endre den etter at rommet er
+          opprettet. Minst 2 ord (helst flere — ett ord per spiller).
         </span>
       </fieldset>
 
@@ -138,10 +143,14 @@ export default function CreateRoomForm() {
 
       <button
         type="submit"
-        disabled={pending}
-        className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
+        disabled={pending || liveWordCount < 2}
+        className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:border-stone-700 disabled:bg-stone-500"
       >
-        {pending ? "Oppretter..." : "Opprett rom →"}
+        {liveWordCount < 2
+          ? `Trenger ${2 - liveWordCount} ord til`
+          : pending
+          ? "Oppretter..."
+          : "Opprett rom →"}
       </button>
     </form>
   );
