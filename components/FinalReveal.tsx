@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 import type { Standing } from "@/lib/types";
 import { Confetti } from "./Confetti";
 import { Standings } from "./Standings";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   standings: Standing[];
 };
 
 export function FinalReveal({ standings }: Props) {
+  const { t } = useI18n();
   const [count, setCount] = useState<number | null>(5);
   const [confettiTick, setConfettiTick] = useState(0);
 
@@ -28,7 +30,7 @@ export function FinalReveal({ standings }: Props) {
   if (count !== null) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-16">
-        <p className="text-lg text-neutral-600">Vinneren er …</p>
+        <p className="text-lg text-neutral-600">{t("final.winnerIs")}</p>
         <div className="text-[12rem] font-black leading-none text-neutral-900 tabular-nums">
           {count}
         </div>
@@ -49,7 +51,7 @@ export function FinalReveal({ standings }: Props) {
       {hasWinner ? (
         <div className="rounded-2xl border-4 border-amber-700/50 bg-amber-100 p-6 text-center shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
           <p className="text-sm font-black uppercase tracking-wide text-amber-900">
-            {isTie ? `Uavgjort på topp (${winners.length} vinnere)` : "Vinner"}
+            {isTie ? t("final.tie", { n: winners.length }) : t("final.winner")}
           </p>
           <div className="mt-2 flex flex-col gap-1">
             {winners.map((w) => (
@@ -61,18 +63,18 @@ export function FinalReveal({ standings }: Props) {
               </p>
             ))}
           </div>
-          <p className="mt-2 text-lg font-black text-amber-900">{topScore} poeng</p>
+          <p className="mt-2 text-lg font-black text-amber-900">{t("final.points", { n: topScore })}</p>
         </div>
       ) : (
         <div className="rounded-2xl border-4 border-stone-500/50 bg-stone-100 p-6 text-center shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
           <p className="text-2xl font-black uppercase text-stone-700">
-            Ingen scoret poeng 🤷
+            {t("final.none")}
           </p>
         </div>
       )}
       <div>
         <h2 className="mb-3 font-black uppercase tracking-wide text-stone-800">
-          Sluttstilling
+          {t("final.table")}
         </h2>
         <Standings standings={standings} highlightLeader />
       </div>
@@ -80,7 +82,7 @@ export function FinalReveal({ standings }: Props) {
         href="/gjettekampen"
         className="self-center rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-2 text-sm font-black uppercase tracking-wide text-violet-50 shadow-[3px_3px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_#0b0420]"
       >
-        Tilbake til Gjettekampen
+        {t("final.back")}
       </Link>
     </div>
   );

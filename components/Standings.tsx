@@ -1,6 +1,7 @@
 "use client";
 
 import type { Standing } from "@/lib/types";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   standings: Standing[];
@@ -8,8 +9,9 @@ type Props = {
 };
 
 export function Standings({ standings, highlightLeader }: Props) {
+  const { t } = useI18n();
   if (standings.length === 0) {
-    return <p className="text-sm text-neutral-500">Ingen poeng ennå.</p>;
+    return <p className="text-sm text-neutral-500">{t("st.empty")}</p>;
   }
   const max = standings[0]?.score ?? 0;
   // Standardranking: like poeng → samme plassering, neste hopper over.
@@ -41,10 +43,10 @@ export function Standings({ standings, highlightLeader }: Props) {
               {isLeader && <span>👑</span>}
             </span>
             <span className="flex items-center gap-3 text-stone-700">
-              <span title="Tegninger gjettet" className="font-bold">
+              <span title={t("st.draws")} className="font-bold">
                 ✏️ {s.draws_won}
               </span>
-              <span title="Riktige gjetninger" className="font-bold">
+              <span title={t("st.guesses")} className="font-bold">
                 🎯 {s.guesses_won}
               </span>
               <span className="text-base font-black text-stone-900">

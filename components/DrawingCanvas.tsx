@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useImperativeHandle, useRef, useState, forwardRef } from "react";
+import { useI18n } from "@/lib/i18n";
 
 export type DrawingCanvasHandle = {
   toPng: () => string;
@@ -37,6 +38,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
     },
     ref
   ) {
+    const { t } = useI18n();
     const wrapRef = useRef<HTMLDivElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [strokes, setStrokes] = useState<Stroke[]>([]);
@@ -207,18 +209,18 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
 
         {showToolbar && (
           <div className={toolbarCls}>
-            <span className={labelCls}>Farge</span>
+            <span className={labelCls}>{t("canvas.color")}</span>
             {COLORS.map((c) => (
               <button
                 key={c}
                 type="button"
                 onClick={() => setColor(c)}
-                aria-label={`Farge ${c}`}
+                aria-label={t("canvas.colorAria", { c })}
                 className={colorBtnCls(color === c)}
                 style={{ backgroundColor: c }}
               />
             ))}
-            <span className={`${labelCls} ml-3`}>Tykkelse</span>
+            <span className={`${labelCls} ml-3`}>{t("canvas.size")}</span>
             {SIZES.map((s) => (
               <button
                 key={s}
@@ -233,10 +235,10 @@ export const DrawingCanvas = forwardRef<DrawingCanvasHandle, DrawingCanvasProps>
               </button>
             ))}
             <button type="button" onClick={undo} className={`${actionBtnCls} ml-auto`}>
-              Angre
+              {t("canvas.undo")}
             </button>
             <button type="button" onClick={clearAll} className={actionBtnCls}>
-              Tøm
+              {t("canvas.clear")}
             </button>
           </div>
         )}

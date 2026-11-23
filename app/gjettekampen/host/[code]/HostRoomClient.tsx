@@ -10,6 +10,8 @@ import { GuessFeed } from "@/components/GuessFeed";
 import { Standings } from "@/components/Standings";
 import { FinalReveal } from "@/components/FinalReveal";
 import { PraiseBanner } from "@/components/PraiseBanner";
+import { useI18n } from "@/lib/i18n";
+import { appError } from "@/lib/i18n/errors";
 import {
   deleteRoom,
   endGame,
@@ -53,6 +55,7 @@ export default function HostRoomClient({
   initialStandings,
 }: Props) {
   const router = useRouter();
+  const { t, errText, praise, timeout } = useI18n();
   const [room, setRoom] = useState<Room>(initialRoom);
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
   const [words] = useState<GjetteWord[]>(initialWords);
@@ -62,10 +65,11 @@ export default function HostRoomClient({
   const [standings, setStandings] = useState<Standing[]>(initialStandings);
   const [externalStrokes, setExternalStrokes] = useState<Stroke[]>([]);
   const [hostToken, setHostToken] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const toErr = (e: unknown) => (e instanceof Error ? e : new Error());
   const [wordHidden, setWordHidden] = useState(true);
-  const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
-  const [timeoutMessage, setTimeoutMessage] = useState<string | null>(null);
+  const [praiseEv, setPraiseEv] = useState<{ idx: number; name: string } | null>(null);
+  const [timeoutEv, setTimeoutEv] = useState<{ idx: number; word: string } | null>(null);
   const [pending, startTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
@@ -107,24 +111,24 @@ export default function HostRoomClient({
         winnerId: string | null;
         word: string;
         endReason: string;
-        timeoutMessage?: string;
+        timeoutIdx?: number;
       };
       setStandings(await getStandings(room.id));
       const t = await getActiveTurn(room.id);
       setActiveTurn(t);
       setTurns(await getAllTurns(room.id));
       if (t) setGuesses(await getGuessesForTurn(t.id));
-      if (data?.endReason === "timeout" && data.timeoutMessage) {
-        setTimeoutMessage(data.timeoutMessage);
+      if (data?.endReason === "timeout" && data.timeoutIdx !== undefined) {
+        setTimeoutEv({ idx: data.timeoutIdx, word: data.word });
       }
     });
     channel.subscribe("guess.posted", async (msg) => {
-      const data = msg.data as GjetteGuess & { praiseMessage?: string };
+      const data = msg.data as GjetteGuess & { praiseIdx?: number; praiseName?: string };
       setGuesses((prev) =>
         prev.some((g) => g.id === data.id) ? prev : [...prev, data],
       );
-      if (data.is_correct && data.praiseMessage) {
-        setPraiseMessage(data.praiseMessage);
+      if (data.is_correct && data.praiseIdx !== undefined) {
+        setPraiseEv({ idx: data.praiseIdx, name: data.praiseName ?? "" });
       }
     });
     channel.subscribe("game.finished", async () => {
@@ -151,13 +155,13 @@ export default function HostRoomClient({
   }, [room.id, activeTurn?.id]);
 
   function doStart() {
-    if (!hostToken) return setError("Mangler host-token. Last siden på nytt.");
+    if (!hostToken) return setError(appError("host.noToken"));
     setError(null);
     startTransition(async () => {
       try {
         await startGame({ roomId: room.id, hostToken });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Kunne ikke starte.");
+        setError(toErr(err));
       }
     });
   }
@@ -168,7 +172,7 @@ export default function HostRoomClient({
       try {
         await nextTurn({ roomId: room.id, hostToken });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Feil.");
+        setError(toErr(err));
       }
     });
   }
@@ -179,32 +183,32 @@ export default function HostRoomClient({
       try {
         await skipTurn({ roomId: room.id, hostToken });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Feil.");
+        setError(toErr(err));
       }
     });
   }
 
   function doEnd() {
     if (!hostToken) return;
-    if (!confirm("Avslutt spillet nå?")) return;
+    if (!confirm(t("host.confirm.end"))) return;
     startTransition(async () => {
       try {
         await endGame({ roomId: room.id, hostToken });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Feil.");
+        setError(toErr(err));
       }
     });
   }
 
   function doDelete() {
     if (!hostToken) return;
-    if (!confirm("Slett dette rommet og alle data? Kan ikke angres.")) return;
+    if (!confirm(t("host.confirm.delete"))) return;
     startTransition(async () => {
       try {
         await deleteRoom({ roomId: room.id, hostToken });
         router.push("/gjettekampen");
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Feil.");
+        setError(toErr(err));
       }
     });
   }
@@ -224,7 +228,7 @@ export default function HostRoomClient({
             onClick={doDelete}
             className="text-sm text-red-600 underline"
           >
-            Slett rom
+            {t("host.delete")}
           </button>
         </div>
       </main>
@@ -236,7 +240,7 @@ export default function HostRoomClient({
       <main className="flex flex-col gap-6">
         <header className="text-center">
           <p className="text-xs font-black uppercase tracking-widest text-violet-700">
-            🎮 Romkode
+            {t("host.code.label")}
           </p>
           <p className="mt-2 text-5xl font-black tracking-[0.2em] text-violet-200 sm:text-7xl [text-shadow:_4px_4px_0_#5b21b6,_-3px_-3px_0_#5b21b6,_3px_-3px_0_#5b21b6,_-3px_3px_0_#5b21b6,_3px_3px_0_#5b21b6]">
             {room.code}
@@ -246,17 +250,17 @@ export default function HostRoomClient({
         <div className="flex flex-col items-center gap-3 rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
           {joinUrl && <RoomQRCode url={joinUrl} />}
           <p className="text-sm font-semibold text-sky-900">
-            Scan eller gå til <strong>{joinUrl}</strong>
+            {t("host.scan")} <strong>{joinUrl}</strong>
           </p>
         </div>
 
         <section className="rounded-2xl border-4 border-emerald-700/40 bg-emerald-100 p-5 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
           <h2 className="mb-3 font-black uppercase tracking-wide text-emerald-900">
-            🙋 Spillere ({players.length})
+            {t("host.players", { n: players.length })}
           </h2>
           {players.length === 0 ? (
             <p className="text-sm font-semibold text-emerald-800/70">
-              Venter på spillere…
+              {t("host.waiting")}
             </p>
           ) : (
             <ul className="flex flex-wrap gap-2">
@@ -273,15 +277,18 @@ export default function HostRoomClient({
         </section>
 
         <p className="text-center text-sm font-semibold text-stone-600">
-          📝 {words.length} ord lastet opp ·{" "}
+          {t("host.words.loaded", { n: words.length })} ·{" "}
           {players.length >= 2 && words.length >= players.length
-            ? `bruker ${
-                Math.floor(words.length / players.length) * players.length
-              } ord (${Math.floor(words.length / players.length)} per spiller)`
-            : `trenger minst ${Math.max(2, players.length)} ord`}
+            ? t("host.words.using", {
+                used: Math.floor(words.length / players.length) * players.length,
+                per: Math.floor(words.length / players.length),
+              })
+            : t("host.words.need", { n: Math.max(2, players.length) })}
         </p>
 
-        {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
+        {error && (
+          <p className="text-sm font-semibold text-red-700">{errText(error, "err.short")}</p>
+        )}
 
         <button
           type="button"
@@ -292,12 +299,12 @@ export default function HostRoomClient({
           className="rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-4 text-lg font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:border-stone-700 disabled:bg-stone-500"
         >
           {players.length < 2
-            ? `Minst 2 spillere må joine (${players.length}/2)`
+            ? t("host.start.minPlayers", { n: players.length })
             : words.length < players.length
-            ? `Trenger ${players.length - words.length} ord til`
+            ? t("host.start.needWords", { n: players.length - words.length })
             : pending
-            ? "Starter…"
-            : "Start spill 🎬"}
+            ? t("host.start.starting")
+            : t("host.start.go")}
         </button>
 
         <button
@@ -305,7 +312,7 @@ export default function HostRoomClient({
           onClick={doDelete}
           className="text-sm text-red-600 underline"
         >
-          Slett rom
+          {t("host.delete")}
         </button>
       </main>
     );
@@ -328,7 +335,7 @@ export default function HostRoomClient({
     expiredTurnRef.current = activeTurn.id;
     // Bare avslutt aktiv tur — verten klikker «Start neste runde» selv
     markTurnTimeout({ roomId: room.id, hostToken }).catch((err) => {
-      setError(err instanceof Error ? err.message : "Feil ved timeout.");
+      setError(toErr(err));
       expiredTurnRef.current = null;
     });
   }
@@ -338,29 +345,29 @@ export default function HostRoomClient({
       <header className="flex items-center justify-between rounded-2xl border-4 border-violet-950 bg-violet-900 px-5 py-4 text-violet-50 shadow-[6px_6px_0_0_#0b0420]">
         <div>
           <p className="text-xs font-black uppercase tracking-wide text-amber-300">
-            🎙️ Vert · Rom {room.code}
+            {t("host.role", { code: room.code })}
           </p>
           <p className="text-2xl font-black uppercase">
-            {remaining} ord igjen ({finishedCount}/{totalTurns})
+            {t("turns.left", { remaining, done: finishedCount, total: totalTurns })}
           </p>
         </div>
         {activeTurn && drawer && (
           <div className="text-right">
             <p className="text-xs font-black uppercase tracking-wide text-amber-300">
-              Tegner
+              {t("drawer.label")}
             </p>
             <p className="text-xl font-black uppercase">{drawer.name}</p>
             <div className="flex items-center justify-end gap-2">
               <p className="text-sm font-bold text-amber-200">
-                Ord: {wordHidden ? "●●●●●" : activeTurn.word}
+                {t("word.label")} {wordHidden ? "●●●●●" : activeTurn.word}
               </p>
               <button
                 type="button"
                 onClick={() => setWordHidden((v) => !v)}
                 className="rounded-md border-2 border-violet-300/50 px-2 py-0.5 text-xs font-bold uppercase text-violet-100 hover:bg-violet-800"
-                title={wordHidden ? "Vis ordet" : "Skjul ordet"}
+                title={wordHidden ? t("word.showTitle") : t("word.hideTitle")}
               >
-                {wordHidden ? "Vis" : "Skjul"}
+                {wordHidden ? t("word.show") : t("word.hide")}
               </button>
             </div>
             {room.round_seconds > 0 && turnStartMs && (
@@ -376,8 +383,11 @@ export default function HostRoomClient({
           </div>
         )}
       </header>
-      <PraiseBanner message={praiseMessage} />
-      <PraiseBanner message={timeoutMessage} variant="timeout" />
+      <PraiseBanner message={praiseEv ? praise(praiseEv.idx, praiseEv.name) : null} />
+      <PraiseBanner
+        message={timeoutEv ? timeout(timeoutEv.idx, timeoutEv.word) : null}
+        variant="timeout"
+      />
 
       {activeTurn && (
         <DrawingCanvas
@@ -390,19 +400,21 @@ export default function HostRoomClient({
 
       <section className="rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
         <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-sky-900">
-          💬 Gjetninger
+          {t("guesses.h")}
         </h2>
         <GuessFeed guesses={guesses} players={players} />
       </section>
 
       <section className="rounded-2xl border-4 border-rose-700/40 bg-rose-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
         <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-rose-900">
-          🏆 Stilling
+          {t("standings.h")}
         </h2>
         <Standings standings={standings} />
       </section>
 
-      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
+      {error && (
+        <p className="text-sm font-semibold text-red-700">{errText(error, "err.short")}</p>
+      )}
 
       <div className="flex flex-wrap gap-2">
         <button
@@ -412,10 +424,10 @@ export default function HostRoomClient({
           className="flex-1 rounded-xl border-4 border-violet-950 bg-violet-800 px-4 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
         >
           {remaining === 0
-            ? "Avslutt og vis resultat 🏁"
+            ? t("host.next.finish")
             : activeTurn
-            ? "Neste runde →"
-            : "Start neste runde →"}
+            ? t("host.next.next")
+            : t("host.next.start")}
         </button>
         {activeTurn && (
           <button
@@ -424,7 +436,7 @@ export default function HostRoomClient({
             disabled={pending}
             className="rounded-xl border-4 border-rose-900 bg-rose-200 px-4 py-3 text-sm font-black uppercase text-rose-900 shadow-[3px_3px_0_0_#881337] hover:bg-rose-300 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_0_#881337]"
           >
-            Hopp over
+            {t("host.skip")}
           </button>
         )}
       </div>
@@ -434,7 +446,7 @@ export default function HostRoomClient({
         onClick={doEnd}
         className="text-sm text-neutral-500 underline"
       >
-        Avslutt spillet
+        {t("host.end")}
       </button>
     </main>
   );

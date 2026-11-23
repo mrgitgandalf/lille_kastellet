@@ -10,6 +10,7 @@ import { FinalReveal } from "@/components/FinalReveal";
 import { Confetti } from "@/components/Confetti";
 import Timer from "@/components/Timer";
 import { PraiseBanner } from "@/components/PraiseBanner";
+import { useI18n } from "@/lib/i18n";
 import {
   getActiveTurn,
   getAllTurns,
@@ -45,6 +46,7 @@ export default function PlayerTurnClient({
   initialStandings,
 }: Props) {
   const router = useRouter();
+  const { t, errText, praise, timeout } = useI18n();
   const [room, setRoom] = useState<Room>(initialRoom);
   const [players, setPlayers] = useState<Player[]>(initialPlayers);
   const [turns, setTurns] = useState<GjetteTurn[]>(initialTurns);
@@ -55,10 +57,10 @@ export default function PlayerTurnClient({
   const [clientToken, setClientToken] = useState<string | null>(null);
   const [tokenLoaded, setTokenLoaded] = useState(false);
   const [guess, setGuess] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const [confettiTick, setConfettiTick] = useState(0);
-  const [praiseMessage, setPraiseMessage] = useState<string | null>(null);
-  const [timeoutMessage, setTimeoutMessage] = useState<string | null>(null);
+  const [praiseEv, setPraiseEv] = useState<{ idx: number; name: string } | null>(null);
+  const [timeoutEv, setTimeoutEv] = useState<{ idx: number; word: string } | null>(null);
   const [pending, startTransition] = useTransition();
   const channelRef = useRef<ReturnType<
     ReturnType<typeof createAblyClient>["channels"]["get"]
@@ -111,25 +113,26 @@ export default function PlayerTurnClient({
         winnerId: string | null;
         word: string;
         endReason: string;
-        timeoutMessage?: string;
+        timeoutIdx?: number;
       };
       setStandings(await getStandings(room.id));
       const t = await getActiveTurn(room.id);
       setActiveTurn(t);
       setTurns(await getAllTurns(room.id));
       if (t) setGuesses(await getGuessesForTurn(t.id));
-      if (data?.endReason === "timeout" && data.timeoutMessage) {
-        setTimeoutMessage(data.timeoutMessage);
+      if (data?.endReason === "timeout" && data.timeoutIdx !== undefined) {
+        setTimeoutEv({ idx: data.timeoutIdx, word: data.word });
       }
     });
     channel.subscribe("guess.posted", async (msg) => {
-      const data = msg.data as GjetteGuess & { praiseMessage?: string };
+      const data = msg.data as GjetteGuess & { praiseIdx?: number; praiseName?: string };
       setGuesses((prev) =>
         prev.some((g) => g.id === data.id) ? prev : [...prev, data],
       );
       if (data.is_correct) {
         setConfettiTick((t) => t + 1);
-        if (data.praiseMessage) setPraiseMessage(data.praiseMessage);
+        if (data.praiseIdx !== undefined)
+          setPraiseEv({ idx: data.praiseIdx, name: data.praiseName ?? "" });
       }
     });
     channel.subscribe("game.finished", async () => {
@@ -179,7 +182,7 @@ export default function PlayerTurnClient({
       try {
         await submitGuess({ clientToken, text });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Feil.");
+        setError(err instanceof Error ? err : new Error());
       }
     });
   }
@@ -214,26 +217,29 @@ export default function PlayerTurnClient({
     return (
       <main className="flex flex-col gap-5">
         <Confetti trigger={confettiTick} />
-        <PraiseBanner message={praiseMessage} />
-        <PraiseBanner message={timeoutMessage} variant="timeout" />
+        <PraiseBanner message={praiseEv ? praise(praiseEv.idx, praiseEv.name) : null} />
+        <PraiseBanner
+          message={timeoutEv ? timeout(timeoutEv.idx, timeoutEv.word) : null}
+          variant="timeout"
+        />
         <header className="rounded-2xl border-4 border-violet-950 bg-violet-900 px-5 py-4 text-center text-violet-50 shadow-[6px_6px_0_0_#0b0420]">
           <p className="text-xs font-black uppercase tracking-wide text-amber-300">
-            {allDone ? "🏁 Spillet er slutt" : "⏸️ Pause"}
+            {allDone ? t("turn.over") : t("turn.pause")}
           </p>
           <p className="text-xl font-black uppercase">
-            {remaining} ord igjen ({finishedCount}/{totalTurns})
+            {t("turns.left", { remaining, done: finishedCount, total: totalTurns })}
           </p>
         </header>
         <section className="rounded-2xl border-4 border-rose-700/40 bg-rose-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
           <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-rose-900">
-            🏆 Stilling
+            {t("standings.h")}
           </h2>
           <Standings standings={standings} />
         </section>
         <p className="text-center text-sm font-semibold text-stone-600">
           {allDone
-            ? "Venter på at verten viser sluttresultatet …"
-            : "Venter på neste runde …"}
+            ? t("turn.waitFinal")
+            : t("turn.waitNext")}
         </p>
       </main>
     );
@@ -242,13 +248,16 @@ export default function PlayerTurnClient({
   return (
     <main className="flex flex-col gap-4">
       <Confetti trigger={confettiTick} />
-      <PraiseBanner message={praiseMessage} />
-      <PraiseBanner message={timeoutMessage} variant="timeout" />
+      <PraiseBanner message={praiseEv ? praise(praiseEv.idx, praiseEv.name) : null} />
+      <PraiseBanner
+        message={timeoutEv ? timeout(timeoutEv.idx, timeoutEv.word) : null}
+        variant="timeout"
+      />
 
       <header className="flex items-center justify-between rounded-2xl border-4 border-violet-950 bg-violet-900 px-5 py-4 text-violet-50 shadow-[6px_6px_0_0_#0b0420]">
         <div>
           <p className="text-xs font-black uppercase tracking-wide text-amber-300">
-            {remaining} ord igjen
+            {t("turn.left", { n: remaining })}
           </p>
           <p className="text-xl font-black uppercase">
             {finishedCount + 1}/{totalTurns}
@@ -256,12 +265,12 @@ export default function PlayerTurnClient({
         </div>
         <div className="text-right">
           <p className="text-xs font-black uppercase tracking-wide text-amber-300">
-            {isDrawer ? "✏️ Du tegner" : "✏️ Tegner"}
+            {isDrawer ? t("turn.youDraw") : t("turn.drawer")}
           </p>
           <p className="text-xl font-black uppercase">{drawer?.name ?? "?"}</p>
           {isDrawer && (
             <p className="text-base font-bold text-amber-200">
-              Ord: {activeTurn.word}
+              {t("word.label")} {activeTurn.word}
             </p>
           )}
           {room.round_seconds > 0 && activeTurn.started_at && (
@@ -285,7 +294,7 @@ export default function PlayerTurnClient({
             theme="retro"
           />
           <p className="text-center text-sm font-semibold text-stone-600">
-            Tegn ordet! Du kan ikke gjette på din egen tegning.
+            {t("turn.drawHint")}
           </p>
         </>
       ) : (
@@ -302,7 +311,7 @@ export default function PlayerTurnClient({
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
               maxLength={200}
-              placeholder="Skriv gjetning…"
+              placeholder={t("turn.placeholder")}
               className="flex-1 rounded-xl border-4 border-sky-700/40 bg-sky-50 px-3 py-3 text-base font-bold text-sky-900 focus:border-sky-700 focus:outline-none"
               autoFocus
             />
@@ -311,24 +320,26 @@ export default function PlayerTurnClient({
               disabled={pending || guess.trim().length === 0}
               className="rounded-xl border-4 border-violet-950 bg-violet-800 px-5 py-3 font-black uppercase tracking-wide text-violet-50 shadow-[4px_4px_0_0_#0b0420] transition hover:bg-violet-700 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[2px_2px_0_0_#0b0420] disabled:opacity-50"
             >
-              Send 🎯
+              {t("turn.send")}
             </button>
           </form>
         </>
       )}
 
-      {error && <p className="text-sm font-semibold text-red-700">{error}</p>}
+      {error && (
+        <p className="text-sm font-semibold text-red-700">{errText(error, "err.short")}</p>
+      )}
 
       <section className="rounded-2xl border-4 border-sky-700/40 bg-sky-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
         <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-sky-900">
-          💬 Gjetninger
+          {t("guesses.h")}
         </h2>
         <GuessFeed guesses={guesses} players={players} />
       </section>
 
       <section className="rounded-2xl border-4 border-rose-700/40 bg-rose-100 p-4 shadow-[6px_6px_0_0_rgba(0,0,0,0.15)]">
         <h2 className="mb-2 text-sm font-black uppercase tracking-wide text-rose-900">
-          🏆 Stilling
+          {t("standings.h")}
         </h2>
         <Standings standings={standings} />
       </section>

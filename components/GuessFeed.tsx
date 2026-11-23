@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { GjetteGuess, Player } from "@/lib/types";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   guesses: GjetteGuess[];
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function GuessFeed({ guesses, players }: Props) {
+  const { t } = useI18n();
   const nameById = new Map(players.map((p) => [p.id, p.name]));
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -24,11 +26,11 @@ export function GuessFeed({ guesses, players }: Props) {
     >
       {guesses.length === 0 ? (
         <p className="text-center font-semibold text-stone-400">
-          Ingen gjetninger ennå …
+          {t("feed.empty")}
         </p>
       ) : (
         guesses.map((g) => {
-          const name = nameById.get(g.player_id) ?? "Ukjent";
+          const name = nameById.get(g.player_id) ?? t("feed.unknown");
           if (g.is_correct) {
             return (
               <div
@@ -37,7 +39,7 @@ export function GuessFeed({ guesses, players }: Props) {
               >
                 <span className="mr-2">🎉</span>
                 <span>{name}</span>
-                <span className="mx-1 normal-case">gjettet riktig:</span>
+                <span className="mx-1 normal-case">{t("feed.correct")}</span>
                 <span className="underline">{g.text}</span>
               </div>
             );

@@ -6,7 +6,8 @@ import { sql } from "@/lib/db";
 import { publishRoomEvent } from "@/lib/ably-server";
 import { generateRoomCode } from "@/lib/roomCode";
 import { shuffle } from "@/lib/game";
-import { randomPraise, randomTimeout } from "@/lib/praise";
+import { randomPraiseIdx, randomTimeoutIdx } from "@/lib/praise";
+import { appError } from "@/lib/i18n/errors";
 import type {
   GjetteGuess,
   GjetteTurn,
@@ -40,9 +41,7 @@ export async function createRoom(input: {
     .map((w) => w.trim())
     .filter((w) => w.length > 0 && w.length <= 100);
   if (words.length < 2) {
-    throw new Error(
-      `Trenger minst 2 ord for å opprette rommet (du har ${words.length}).`,
-    );
+    throw appError("e.min2words", { n: words.length });
   }
 
   for (let attempt = 0; attempt < 8; attempt++) {
@@ -74,7 +73,7 @@ export async function createRoom(input: {
       if (!msg.includes("duplicate") && !msg.includes("unique")) throw err;
     }
   }
-  throw new Error("Klarte ikke å generere en unik romkode. Prøv igjen.");
+  throw appError("e.codeGen");
 }
 
 const joinRoomSchema = z.object({
@@ -93,15 +92,15 @@ export async function joinRoom(input: {
     where code = ${parsed.code} and game_type = 'gjettekampen'
   `) as { id: string; state: string }[];
   const room = roomRows[0];
-  if (!room) throw new Error("Fant ikke rom med den koden.");
-  if (room.state !== "lobby") throw new Error("Spillet har allerede startet.");
+  if (!room) throw appError("e.noRoom");
+  if (room.state !== "lobby") throw appError("e.started");
 
   const maxSeatRows = (await sql`
     select coalesce(max(seat_order), -1) as max_seat
     from players where room_id = ${room.id}
   `) as { max_seat: number }[];
   const nextSeat = (maxSeatRows[0]?.max_seat ?? -1) + 1;
-  if (nextSeat >= 20) throw new Error("Rommet er fullt (maks 20 spillere).");
+  if (nextSeat >= 20) throw appError("e.full");
 
   const inserted = (await sql`
     insert into players (room_id, name, seat_order)
@@ -137,8 +136,8 @@ export async function setWords(input: {
       and game_type = 'gjettekampen'
   `) as { id: string; state: string }[];
   const room = rooms[0];
-  if (!room) throw new Error("Uautorisert eller ukjent rom.");
-  if (room.state !== "lobby") throw new Error("Kan ikke endre ord etter spillet har startet.");
+  if (!room) throw appError("e.unauth");
+  if (room.state !== "lobby") throw appError("e.wordsLocked");
 
   const words = parsed.wordsText
     .split("\n")
@@ -166,23 +165,21 @@ export async function startGame(input: {
       and game_type = 'gjettekampen'
   `) as Room[];
   const room = roomRows[0];
-  if (!room) throw new Error("Uautorisert eller ukjent rom.");
-  if (room.state !== "lobby") throw new Error("Spillet har allerede startet.");
+  if (!room) throw appError("e.unauth");
+  if (room.state !== "lobby") throw appError("e.started");
 
   const players = (await sql`
     select * from players where room_id = ${room.id} order by seat_order asc
   `) as Player[];
   if (players.length < 2) {
-    throw new Error("Minst 2 spillere må være med før spillet kan starte.");
+    throw appError("e.min2players");
   }
 
   const words = (await sql`
     select * from gjette_words where room_id = ${room.id} order by word_order asc
   `) as GjetteWord[];
   if (words.length < players.length) {
-    throw new Error(
-      `Trenger minst ${players.length} ord (du har ${words.length}).`,
-    );
+    throw appError("e.needWords", { n: players.length, have: words.length });
   }
 
   // Rettferdig fordeling: bruk floor(words/players) × players ord
@@ -234,7 +231,7 @@ export async function submitGuess(input: {
     select * from players where client_token = ${parsed.clientToken}
   `) as Player[];
   const player = playerRows[0];
-  if (!player) throw new Error("Spilleren ble ikke funnet.");
+  if (!player) throw appError("e.noPlayer");
 
   const turnRows = (await sql`
     select * from gjette_turns
@@ -283,7 +280,7 @@ export async function submitGuess(input: {
       values (${turn.id}, ${player.id}, ${parsed.text}, true)
       returning id, created_at
     `) as { id: string; created_at: string }[];
-    const praiseMessage = randomPraise(player.name);
+    const praiseIdx = randomPraiseIdx();
     await publishRoomEvent(player.room_id, "guess.posted", {
       id: ins[0].id,
       turn_id: turn.id,
@@ -291,7 +288,8 @@ export async function submitGuess(input: {
       text: parsed.text,
       is_correct: true,
       created_at: ins[0].created_at,
-      praiseMessage,
+      praiseIdx,
+      praiseName: player.name,
     });
     await publishRoomEvent(player.room_id, "turn.ended", {
       turnId: turn.id,
@@ -328,7 +326,7 @@ export async function markTurnTimeout(input: {
       and game_type = 'gjettekampen'
   `) as Room[];
   const room = roomRows[0];
-  if (!room) throw new Error("Uautorisert eller ukjent rom.");
+  if (!room) throw appError("e.unauth");
   if (room.state !== "playing") return;
 
   // Lukk kun den aktive turen (med timeout). Verten starter neste manuelt.
@@ -347,7 +345,7 @@ export async function markTurnTimeout(input: {
       winnerId: null,
       word: updated[0].word,
       endReason: "timeout",
-      timeoutMessage: randomTimeout(updated[0].word),
+      timeoutIdx: randomTimeoutIdx(),
     });
   }
 }
@@ -362,8 +360,8 @@ export async function nextTurn(input: {
       and game_type = 'gjettekampen'
   `) as Room[];
   const room = roomRows[0];
-  if (!room) throw new Error("Uautorisert eller ukjent rom.");
-  if (room.state !== "playing") throw new Error("Spillet er ikke aktivt.");
+  if (!room) throw appError("e.unauth");
+  if (room.state !== "playing") throw appError("e.notActive");
 
   // Steng aktiv tur (timeout hvis ikke allerede ferdig)
   const active = (await sql`
@@ -384,7 +382,7 @@ export async function nextTurn(input: {
       winnerId: null,
       word: active[0].word,
       endReason: "timeout",
-      timeoutMessage: randomTimeout(active[0].word),
+      timeoutIdx: randomTimeoutIdx(),
     });
   }
 
@@ -420,7 +418,7 @@ export async function skipTurn(input: {
       and game_type = 'gjettekampen'
   `) as Room[];
   const room = roomRows[0];
-  if (!room) throw new Error("Uautorisert.");
+  if (!room) throw appError("e.unauth");
 
   const active = (await sql`
     select * from gjette_turns
@@ -455,7 +453,7 @@ export async function endGame(input: {
       and game_type = 'gjettekampen'
   `) as Room[];
   const room = roomRows[0];
-  if (!room) throw new Error("Uautorisert.");
+  if (!room) throw appError("e.unauth");
 
   await sql`
     update gjette_turns set
@@ -478,7 +476,7 @@ export async function deleteRoom(input: {
     where id = ${input.roomId} and host_token = ${input.hostToken}
       and game_type = 'gjettekampen'
   `) as { id: string }[];
-  if (!ok[0]) throw new Error("Uautorisert.");
+  if (!ok[0]) throw appError("e.unauth");
   await publishRoomEvent(input.roomId, "room.updated", { deleted: true });
   await sql`delete from rooms where id = ${input.roomId}`;
 }

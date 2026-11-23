@@ -2,8 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
+import { useI18n } from "@/lib/i18n";
 
 export default function RoomQRCode({ url, size = 220 }: { url: string; size?: number }) {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -15,5 +17,5 @@ export default function RoomQRCode({ url, size = 220 }: { url: string; size?: nu
     }).catch(() => {});
   }, [url, size]);
 
-  return <canvas ref={canvasRef} aria-label={`QR-kode til ${url}`} />;
+  return <canvas ref={canvasRef} aria-label={t("qr.aria", { url })} />;
 }
